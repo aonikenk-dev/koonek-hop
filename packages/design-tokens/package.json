@@ -1,0 +1,9 @@
+{
+  "name": "@koonek/design-tokens",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Brand design tokens for Koonek HOP, sourced from the aonikenk.dev Brand Manual v2.0 (Principal Claro variant).",
+  "main": "src/index.ts",
+  "types": "src/index.ts"
+}
