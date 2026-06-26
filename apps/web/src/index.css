@@ -2,6 +2,134 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-bg text-text font-mono;
+@layer base {
+  * {
+    box-sizing: border-box;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-bg text-text font-mono text-base;
+    min-height: 100dvh;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-2;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted;
+  }
+}
+
+@layer components {
+  .eyebrow {
+    @apply text-2xs font-mono tracking-widest uppercase text-moss;
+  }
+
+  .heading-display {
+    @apply font-display font-bold tracking-tight;
+  }
+
+  .kpi-card {
+    @apply bg-surface rounded-md border border-border shadow-card p-5;
+  }
+
+  .table-row-hover {
+    @apply transition-colors hover:bg-surface-2;
+  }
+
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2 rounded text-sm text-muted
+           transition-colors hover:bg-surface-2 hover:text-text;
+  }
+  .nav-item.active {
+    @apply bg-moss/10 text-moss font-medium;
+  }
+
+  .badge {
+    @apply inline-flex items-center px-2 py-0.5 rounded-sm text-2xs font-mono tracking-wide uppercase;
+  }
+  .badge-moss { @apply badge bg-moss/10 text-moss; }
+  .badge-glacier { @apply badge bg-glacier/10 text-glacier; }
+  .badge-sienna { @apply badge bg-sienna/10 text-sienna; }
+  .badge-muted { @apply badge bg-surface-2 text-muted; }
+
+  .btn {
+    @apply inline-flex items-center gap-2 px-4 py-2 rounded text-sm font-mono
+           transition-colors focus:outline-none focus:ring-2 focus:ring-offset-1;
+  }
+  .btn-primary {
+    @apply btn bg-moss text-white hover:bg-moss-dim focus:ring-moss/40;
+  }
+  .btn-secondary {
+    @apply btn bg-surface-2 text-text hover:bg-border focus:ring-border;
+  }
+  .btn-ghost {
+    @apply btn bg-transparent text-muted hover:bg-surface-2 hover:text-text focus:ring-border;
+  }
+}
+
+/* FullCalendar restyle — maps FullCalendar's CSS custom properties to the
+   Koonek brand tokens instead of its default theme. Scoped to .koonek-calendar
+   so it never leaks into the rest of the app. */
+.koonek-calendar {
+  --fc-border-color: #D0D8E4;
+  --fc-page-bg-color: #FFFFFF;
+  --fc-neutral-bg-color: #E8EDF4;
+  --fc-neutral-text-color: #4A5568;
+  --fc-today-bg-color: rgba(61, 107, 79, 0.06);
+  --fc-now-indicator-color: #C0623A;
+  --fc-button-text-color: #2A3140;
+  --fc-button-bg-color: #FFFFFF;
+  --fc-button-border-color: #D0D8E4;
+  --fc-button-hover-bg-color: #E8EDF4;
+  --fc-button-hover-border-color: #3D6B4F;
+  --fc-button-active-bg-color: #3D6B4F;
+  --fc-button-active-border-color: #3D6B4F;
+  --fc-event-bg-color: #3D6B4F;
+  --fc-event-border-color: #3D6B4F;
+  --fc-event-text-color: #FFFFFF;
+  --fc-list-event-hover-bg-color: #E8EDF4;
+  font-family: theme('fontFamily.mono');
+  font-size: 13px;
+}
+.koonek-calendar .fc-toolbar-title {
+  font-family: theme('fontFamily.display');
+  font-weight: 700;
+  font-size: 18px;
+  color: #0D0F12;
+  letter-spacing: -0.02em;
+}
+.koonek-calendar .fc-button {
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  font-weight: 500;
+  box-shadow: none !important;
+}
+.koonek-calendar .fc-button-primary:not(:disabled).fc-button-active,
+.koonek-calendar .fc-button-primary:not(:disabled):active {
+  color: #FFFFFF;
+}
+.koonek-calendar .fc-daygrid-day-number,
+.koonek-calendar .fc-col-header-cell-cushion {
+  color: #2A3140;
+}
+.koonek-calendar a {
+  color: inherit;
+}
+.koonek-calendar .fc-event {
+  border-radius: 4px;
+  cursor: pointer;
 }

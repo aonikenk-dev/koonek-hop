@@ -16,7 +16,15 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.23.0",
     "@tanstack/react-query": "^5.45.0",
-    "zustand": "^4.5.2"
+    "zustand": "^4.5.2",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.462.0",
+    "@fullcalendar/core": "^6.1.15",
+    "@fullcalendar/react": "^6.1.15",
+    "@fullcalendar/daygrid": "^6.1.15",
+    "@fullcalendar/timegrid": "^6.1.15",
+    "@fullcalendar/interaction": "^6.1.15",
+    "@fullcalendar/list": "^6.1.15"
   },
   "devDependencies": {
     "@koonek/config": "*",

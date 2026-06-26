@@ -2,7 +2,7 @@
   "name": "koonek-hop",
   "version": "0.1.0",
   "private": true,
-  "description": "Koonek HOP — Healthcare Operations Platform (SaaS). Monorepo for web app, API, and shared packages.",
+  "description": "Koonek HOP — AI-powered Healthcare Operations Platform (SaaS). Monorepo for web app, API, and shared packages.",
   "workspaces": [
     "apps/*",
     "packages/*"

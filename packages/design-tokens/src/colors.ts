@@ -5,9 +5,15 @@
 
 export const brand = {
   sienna: '#C0623A',
+  siennaLight: '#D47A54',
+  siennaDim: '#9B4F2E',
   ember: '#E07A52',
   moss: '#3D6B4F',
+  mossLight: '#4E8863',
+  mossDim: '#2E5139',
   ice: '#7BAFC4',
+  iceLight: '#9AC4D4',
+  iceDim: '#5C91A8',
   obsidian: '#0D0F12',
 } as const;
 
