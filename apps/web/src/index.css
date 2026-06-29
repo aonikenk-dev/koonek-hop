@@ -133,3 +133,26 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
+/* Rendered Markdown preview for the Notas tab. */
+.prose-koonek h1, .prose-koonek h2, .prose-koonek h3 {
+  font-family: theme('fontFamily.display');
+  font-weight: 700;
+  color: #0D0F12;
+  margin-top: 1em;
+  margin-bottom: 0.4em;
+}
+.prose-koonek h1 { font-size: 22px; }
+.prose-koonek h2 { font-size: 18px; }
+.prose-koonek h3 { font-size: 15px; }
+.prose-koonek p { margin-bottom: 0.8em; line-height: 1.7; }
+.prose-koonek ul, .prose-koonek ol { margin-left: 1.25em; margin-bottom: 0.8em; }
+.prose-koonek li { margin-bottom: 0.25em; }
+.prose-koonek code {
+  background: #E8EDF4;
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+.prose-koonek a { color: #3D6B4F; text-decoration: underline; }
+.prose-koonek strong { color: #0D0F12; }

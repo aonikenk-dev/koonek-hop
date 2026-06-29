@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
+import { useAI } from '@/contexts/AIContext';
 import { KoonekIsotipo } from '@/components/ui/KoonekLogo';
 import { getInitials } from '@/utils/format';
 
@@ -28,13 +29,14 @@ const NAV_GROUPS = [
     labelKey: 'nav.care',
     items: [
       { to: '/patients', labelKey: 'nav.patients', icon: Users },
-      { to: '/appointments', labelKey: 'nav.appointments', icon: CalendarDays },
       { to: '/health-records', labelKey: 'nav.healthRecords', icon: FileText },
+      { to: '/appointments', labelKey: 'nav.appointments', icon: CalendarDays },
       { to: '/prescriptions', labelKey: 'nav.prescriptions', icon: ClipboardList },
       { to: '/reports', labelKey: 'nav.reports', icon: BarChart3 },
     ],
   },
   {
+    key: 'ai',
     labelKey: 'nav.ai',
     items: [
       { to: '/ai/copilot', labelKey: 'nav.aiCopilot', icon: Bot },
@@ -53,6 +55,9 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const navigate = useNavigate();
   const { t } = useApp();
   const { user, logout } = useAuth();
+  const { aiModuleEnabled } = useAI();
+
+  const navGroups = NAV_GROUPS.filter((group) => group.key !== 'ai' || aiModuleEnabled);
 
   const handleLogout = () => {
     logout();
@@ -91,7 +96,7 @@ export default function Sidebar({ collapsed, onToggle }: SidebarProps) {
       </div>
 
       <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-4">
-        {NAV_GROUPS.map(({ labelKey, items }) => (
+        {navGroups.map(({ labelKey, items }) => (
           <div key={labelKey}>
             {!collapsed && (
               <p className="px-2 mb-1 text-2xs text-muted tracking-widest uppercase font-mono">{t(labelKey)}</p>

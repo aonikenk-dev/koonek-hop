@@ -1,7 +1,9 @@
-import { useState, type FormEvent } from 'react';
+import { useState, type FormEvent, type MouseEvent } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Search, Pencil, Trash2, Users } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useApp } from '@/contexts/AppContext';
+import { useWorkspaceTabs } from '@/store/workspaceTabs';
 import { patients as mockPatients, type Patient, type PatientStatus } from '@/data/mock/patients';
 import Modal from '@/components/ui/Modal';
 import ConfirmModal from '@/components/ui/ConfirmModal';
@@ -91,6 +93,13 @@ const STATUS_BADGE: Record<PatientStatus, string> = {
 
 export default function Patients() {
   const { t } = useApp();
+  const navigate = useNavigate();
+  const { openTab } = useWorkspaceTabs();
+
+  const openPatient = (p: Patient) => {
+    openTab({ key: `patient:${p.id}`, kind: 'patient', label: `${p.firstName} ${p.lastName}`, path: `/patients/${p.id}` });
+    navigate(`/patients/${p.id}`);
+  };
   const [list, setList] = useState<Patient[]>(mockPatients);
   const [search, setSearch] = useState('');
   const [modalState, setModalState] = useState<ModalState>(null);
@@ -108,7 +117,16 @@ export default function Patients() {
     if (modalState?.mode === 'create') {
       setList((prev) => [
         ...prev,
-        { ...form, id: `p-${Date.now()}`, lastVisitAt: '—', status: 'active' },
+        {
+          ...form,
+          id: `p-${Date.now()}`,
+          lastVisitAt: '—',
+          status: 'active',
+          nationalIdType: 'DNI',
+          dateOfBirth: '',
+          healthRecordNumber: `HC-${String(prev.length + 1).padStart(4, '0')}`,
+          healthInsurance: null,
+        },
       ]);
     } else if (modalState?.mode === 'edit') {
       setList((prev) => prev.map((p) => (p.id === modalState.data.id ? { ...p, ...form } : p)));
@@ -153,14 +171,20 @@ export default function Patients() {
       render: (p) => (
         <div className="flex items-center justify-center gap-1">
           <button
-            onClick={() => setModalState({ mode: 'edit', data: p })}
+            onClick={(e: MouseEvent) => {
+              e.stopPropagation();
+              setModalState({ mode: 'edit', data: p });
+            }}
             className="p-1.5 rounded text-muted hover:text-moss hover:bg-moss/10 transition-colors"
             title={t('patients.edit')}
           >
             <Pencil size={13} />
           </button>
           <button
-            onClick={() => setConfirmDelete(p)}
+            onClick={(e: MouseEvent) => {
+              e.stopPropagation();
+              setConfirmDelete(p);
+            }}
             className="p-1.5 rounded text-muted hover:text-sienna hover:bg-sienna/10 transition-colors"
             title={t('patients.delete')}
           >
@@ -193,6 +217,7 @@ export default function Patients() {
         columns={columns}
         rows={filtered}
         rowKey={(p) => p.id}
+        onRowClick={openPatient}
         emptyMessage={search ? t('common.noResults') : t('patients.empty')}
       />
 

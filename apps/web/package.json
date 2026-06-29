@@ -24,7 +24,9 @@
     "@fullcalendar/daygrid": "^6.1.15",
     "@fullcalendar/timegrid": "^6.1.15",
     "@fullcalendar/interaction": "^6.1.15",
-    "@fullcalendar/list": "^6.1.15"
+    "@fullcalendar/list": "^6.1.15",
+    "recharts": "^3.0.0",
+    "marked": "^12.0.2"
   },
   "devDependencies": {
     "@koonek/config": "*",

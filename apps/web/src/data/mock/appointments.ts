@@ -1,29 +1,26 @@
-export type AppointmentStatus = 'scheduled' | 'confirmed' | 'cancelled';
+export type AppointmentStatus = 'scheduled' | 'confirmed' | 'cancelled' | 'done' | 'overbooking' | 'blocked';
 
 export interface Appointment {
   id: string;
-  patientName: string;
+  /** Absent for 'blocked' entries (agenda blocks have no patient). */
+  patientName?: string;
   doctorName: string;
   start: string;
   end: string;
+  /** Reason for visit, or the block description when status is 'blocked'. */
   reason: string;
   status: AppointmentStatus;
 }
 
-function todayAt(hour: number, minute = 0): Date {
+function atTime(daysOffset: number, hour: number, minute = 0): Date {
   const d = new Date();
+  d.setDate(d.getDate() + daysOffset);
   d.setHours(hour, minute, 0, 0);
   return d;
 }
 
-function toIso(d: Date): string {
+function iso(d: Date): string {
   return d.toISOString();
-}
-
-function addDays(d: Date, days: number): Date {
-  const copy = new Date(d);
-  copy.setDate(copy.getDate() + days);
-  return copy;
 }
 
 export const appointments: Appointment[] = [
@@ -31,8 +28,8 @@ export const appointments: Appointment[] = [
     id: 'a1',
     patientName: 'Lucía Fernández',
     doctorName: 'Dr. Martín Suárez',
-    start: toIso(todayAt(9, 30)),
-    end: toIso(todayAt(10, 0)),
+    start: iso(atTime(0, 9, 30)),
+    end: iso(atTime(0, 10, 0)),
     reason: 'Control general',
     status: 'confirmed',
   },
@@ -40,8 +37,8 @@ export const appointments: Appointment[] = [
     id: 'a2',
     patientName: 'Tomás Ibarra',
     doctorName: 'Dr. Martín Suárez',
-    start: toIso(todayAt(10, 0)),
-    end: toIso(todayAt(10, 30)),
+    start: iso(atTime(0, 10, 0)),
+    end: iso(atTime(0, 10, 30)),
     reason: 'Vacunación',
     status: 'scheduled',
   },
@@ -49,8 +46,8 @@ export const appointments: Appointment[] = [
     id: 'a3',
     patientName: 'Carla Gómez',
     doctorName: 'Dra. Valentina Ríos',
-    start: toIso(todayAt(11, 15)),
-    end: toIso(todayAt(11, 45)),
+    start: iso(atTime(0, 11, 0)),
+    end: iso(atTime(0, 11, 20)),
     reason: 'Seguimiento',
     status: 'scheduled',
   },
@@ -58,8 +55,8 @@ export const appointments: Appointment[] = [
     id: 'a4',
     patientName: 'Diego Paz',
     doctorName: 'Dra. Valentina Ríos',
-    start: toIso(addDays(todayAt(12, 0), 1)),
-    end: toIso(addDays(todayAt(12, 30), 1)),
+    start: iso(atTime(1, 14, 0)),
+    end: iso(atTime(1, 14, 20)),
     reason: 'Primera consulta',
     status: 'cancelled',
   },
@@ -67,9 +64,44 @@ export const appointments: Appointment[] = [
     id: 'a5',
     patientName: 'Lucía Fernández',
     doctorName: 'Dr. Martín Suárez',
-    start: toIso(addDays(todayAt(15, 0), 2)),
-    end: toIso(addDays(todayAt(15, 30), 2)),
+    start: iso(atTime(2, 15, 0)),
+    end: iso(atTime(2, 15, 30)),
     reason: 'Resultados de laboratorio',
     status: 'confirmed',
+  },
+  {
+    id: 'a6',
+    patientName: 'Martina Sosa',
+    doctorName: 'Dr. Martín Suárez',
+    start: iso(atTime(-1, 10, 0)),
+    end: iso(atTime(-1, 10, 30)),
+    reason: 'Control general',
+    status: 'scheduled', // past + still scheduled → rendered as expired
+  },
+  {
+    id: 'a7',
+    patientName: 'Pedro Acosta',
+    doctorName: 'Dra. Valentina Ríos',
+    start: iso(atTime(-1, 9, 0)),
+    end: iso(atTime(-1, 9, 20)),
+    reason: 'Control pediátrico',
+    status: 'done',
+  },
+  {
+    id: 'a8',
+    patientName: 'Julián Verón',
+    doctorName: 'Dr. Martín Suárez',
+    start: iso(atTime(0, 12, 45)),
+    end: iso(atTime(0, 13, 0)),
+    reason: 'Urgencia — sobreturno',
+    status: 'overbooking',
+  },
+  {
+    id: 'a9',
+    doctorName: 'Dr. Martín Suárez',
+    start: iso(atTime(0, 16, 0)),
+    end: iso(atTime(0, 17, 0)),
+    reason: 'Capacitación — agenda bloqueada',
+    status: 'blocked',
   },
 ];
