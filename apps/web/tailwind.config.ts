@@ -23,6 +23,7 @@ export default {
         sienna: brand.sienna,
         'sienna-light': brand.siennaLight,
         'sienna-dim': brand.siennaDim,
+        ember: brand.ember,
         obsidian: brand.obsidian,
       },
       fontFamily: {

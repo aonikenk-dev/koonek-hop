@@ -7,9 +7,11 @@ import WorkspaceTabBar from './WorkspaceTabBar';
 import LawenWidget from '@/components/ai/LawenWidget';
 import { useApp } from '@/contexts/AppContext';
 import { patients } from '@/data/mock/patients';
+import { doctors, doctorLabel } from '@/data/mock/doctors';
 
 const PAGE_KEYS: Record<string, string> = {
   '/dashboard': 'dashboard',
+  '/doctors': 'doctors',
   '/patients': 'patients',
   '/appointments': 'appointments',
   '/health-records': 'healthRecords',
@@ -19,15 +21,39 @@ const PAGE_KEYS: Record<string, string> = {
   '/ai/agents': 'aiAgents',
   '/ai/insight': 'aiInsight',
   '/settings': 'settings',
+  '/catalogues/drugs': 'cataloguesDrugs',
+  '/catalogues/health-insurances': 'cataloguesHealthInsurances',
+  '/catalogues/study-types': 'cataloguesStudyTypes',
+  '/catalogues/laboratory-types': 'cataloguesLaboratoryTypes',
+  '/catalogues/services': 'cataloguesServices',
+  '/catalogues/tags': 'cataloguesTags',
+  '/preoccupational': 'preoccupational',
 };
 
 function resolveTitle(pathname: string, t: (key: string) => string): { title: string; subtitle: string } {
+  const doctorDetailMatch = pathname.match(/^\/doctors\/([^/]+)$/);
+  if (doctorDetailMatch) {
+    const doctor = doctors.find((d) => d.id === doctorDetailMatch[1]);
+    return {
+      title: doctor ? doctorLabel(doctor) : t('pages.doctors.title'),
+      subtitle: t('pages.doctors.title'),
+    };
+  }
+
   const patientDetailMatch = pathname.match(/^\/patients\/([^/]+)$/);
   if (patientDetailMatch) {
     const patient = patients.find((p) => p.id === patientDetailMatch[1]);
     return {
       title: patient ? `${patient.firstName} ${patient.lastName}` : t('pages.patients.title'),
       subtitle: t('pages.patients.title'),
+    };
+  }
+
+  const preoccupationalDetailMatch = pathname.match(/^\/preoccupational\/([^/]+)$/);
+  if (preoccupationalDetailMatch) {
+    return {
+      title: t('pages.preoccupational.title'),
+      subtitle: t('pages.preoccupational.subtitle'),
     };
   }
 

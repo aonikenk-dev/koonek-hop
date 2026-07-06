@@ -70,13 +70,13 @@ export default function HealthRecords() {
 
   return (
     <div className="space-y-5">
-      <div className="flex items-center gap-2 bg-surface border border-border rounded px-3 py-1.5 w-64">
-        <Search size={13} className="text-muted" />
+      <div className="relative flex-1 max-w-xs">
+        <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t('healthRecords.searchPlaceholder')}
-          className="text-sm font-mono text-text bg-transparent outline-none flex-1"
+          className="input pl-8 w-full text-sm h-9"
         />
       </div>
 

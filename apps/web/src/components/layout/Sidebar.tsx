@@ -3,9 +3,11 @@ import { clsx } from 'clsx';
 import {
   LayoutDashboard,
   Users,
+  Stethoscope,
   CalendarDays,
   FileText,
   ClipboardList,
+  ClipboardCheck,
   BarChart3,
   Bot,
   Workflow,
@@ -13,6 +15,12 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  Pill,
+  ShieldCheck,
+  Microscope,
+  FlaskConical,
+  DollarSign,
+  Tag,
 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -28,11 +36,24 @@ const NAV_GROUPS = [
   {
     labelKey: 'nav.care',
     items: [
+      { to: '/doctors', labelKey: 'nav.doctors', icon: Stethoscope },
       { to: '/patients', labelKey: 'nav.patients', icon: Users },
       { to: '/health-records', labelKey: 'nav.healthRecords', icon: FileText },
       { to: '/appointments', labelKey: 'nav.appointments', icon: CalendarDays },
       { to: '/prescriptions', labelKey: 'nav.prescriptions', icon: ClipboardList },
+      { to: '/preoccupational', labelKey: 'nav.preoccupational', icon: ClipboardCheck },
       { to: '/reports', labelKey: 'nav.reports', icon: BarChart3 },
+    ],
+  },
+  {
+    labelKey: 'nav.catalogues',
+    items: [
+      { to: '/catalogues/drugs', labelKey: 'nav.cataloguesDrugs', icon: Pill },
+      { to: '/catalogues/health-insurances', labelKey: 'nav.cataloguesHealthInsurances', icon: ShieldCheck },
+      { to: '/catalogues/study-types', labelKey: 'nav.cataloguesStudyTypes', icon: Microscope },
+      { to: '/catalogues/laboratory-types', labelKey: 'nav.cataloguesLaboratoryTypes', icon: FlaskConical },
+      { to: '/catalogues/services', labelKey: 'nav.cataloguesServices', icon: DollarSign },
+      { to: '/catalogues/tags', labelKey: 'nav.cataloguesTags', icon: Tag },
     ],
   },
   {

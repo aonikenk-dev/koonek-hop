@@ -64,6 +64,7 @@
   .badge-glacier { @apply badge bg-glacier/10 text-glacier; }
   .badge-sienna { @apply badge bg-sienna/10 text-sienna; }
   .badge-muted { @apply badge bg-surface-2 text-muted; }
+  .badge-ember { @apply badge bg-ember/10 text-ember; }
 
   .btn {
     @apply inline-flex items-center gap-2 px-4 py-2 rounded text-sm font-mono

@@ -161,7 +161,7 @@ export default function Login() {
           <div className="flex items-center gap-2 mb-8">
             <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded border border-border bg-surface">
               {organization.logoUrl ? (
-                <img src={organization.logoUrl} alt={organization.name} className="w-4 object-contain" />
+                <img src={organization.logoUrl} alt={organization.name} className="w-8 object-contain" />
               ) : (
                 <Building2 size={12} className="text-muted" />
               )}

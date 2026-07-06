@@ -4,3 +4,7 @@ import { delay } from './delay';
 export async function fetchAppointmentsByPatientName(patientName: string): Promise<Appointment[]> {
   return delay(appointments.filter((a) => a.patientName === patientName));
 }
+
+export async function fetchAppointmentsByDoctorName(doctorName: string): Promise<Appointment[]> {
+  return delay(appointments.filter((a) => a.doctorName === doctorName));
+}

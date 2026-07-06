@@ -198,19 +198,18 @@ export default function Patients() {
   return (
     <div className="space-y-5">
       <div className="flex flex-wrap items-center gap-3">
-        <Button leftIcon={<Plus size={14} />} className="text-xs" onClick={() => setModalState({ mode: 'create' })}>
-          {t('patients.new')}
-        </Button>
-        <div className="flex-1 min-w-[200px]" />
-        <div className="flex items-center gap-2 bg-surface border border-border rounded px-3 py-1.5">
-          <Search size={13} className="text-muted" />
+        <div className="relative flex-1 max-w-xs">
+          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none" />
           <input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder={t('patients.searchPlaceholder')}
-            className="text-sm font-mono text-text bg-transparent outline-none w-48"
+            className="input pl-8 w-full text-sm h-9"
           />
         </div>
+        <Button leftIcon={<Plus size={14} />} className="ml-auto text-xs h-9" onClick={() => setModalState({ mode: 'create' })}>
+          {t('patients.new')}
+        </Button>
       </div>
 
       <Table

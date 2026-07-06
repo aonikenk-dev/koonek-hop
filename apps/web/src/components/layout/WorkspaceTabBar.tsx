@@ -1,5 +1,5 @@
 import type { MouseEvent } from 'react';
-import { X, FileText, User } from 'lucide-react';
+import { X, FileText, User, Stethoscope, ClipboardCheck } from 'lucide-react';
 import { clsx } from 'clsx';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useWorkspaceTabs, type WorkspaceTab } from '@/store/workspaceTabs';
@@ -7,6 +7,15 @@ import { useWorkspaceTabs, type WorkspaceTab } from '@/store/workspaceTabs';
 const KIND_ICON: Record<WorkspaceTab['kind'], typeof FileText> = {
   patient: User,
   healthRecord: FileText,
+  doctor: Stethoscope,
+  preoccupational: ClipboardCheck,
+};
+
+const KIND_ICON_COLOR: Record<WorkspaceTab['kind'], string> = {
+  patient: 'text-moss',
+  healthRecord: 'text-moss',
+  doctor: 'text-glacier',
+  preoccupational: 'text-ember',
 };
 
 export default function WorkspaceTabBar() {
@@ -37,6 +46,7 @@ export default function WorkspaceTabBar() {
       {tabs.map((tab) => {
         const isActive = tab.path === location.pathname;
         const Icon = KIND_ICON[tab.kind];
+        const iconColor = KIND_ICON_COLOR[tab.kind];
         return (
           <button
             key={tab.key}
@@ -48,7 +58,7 @@ export default function WorkspaceTabBar() {
                 : 'bg-transparent border-transparent text-muted hover:text-text hover:bg-surface/60'
             )}
           >
-            <Icon size={12} className="shrink-0 text-moss" />
+            <Icon size={12} className={clsx('shrink-0', iconColor)} />
             {tab.label}
             <span
               onClick={(e) => handleClose(e, tab.key)}

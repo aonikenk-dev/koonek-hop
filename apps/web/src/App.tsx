@@ -5,6 +5,8 @@ import { useAI } from '@/contexts/AIContext';
 import Layout from '@/components/layout/Layout';
 import Login from '@/pages/Login/Login';
 import Dashboard from '@/pages/Dashboard/Dashboard';
+import Doctors from '@/pages/Doctors/Doctors';
+import DoctorDetail from '@/pages/Doctors/DoctorDetail';
 import Patients from '@/pages/Patients/Patients';
 import PatientDetail from '@/pages/Patients/PatientDetail';
 import Appointments from '@/pages/Appointments/Appointments';
@@ -16,6 +18,14 @@ import Copilot from '@/pages/AI/Copilot';
 import Agents from '@/pages/AI/Agents';
 import Insight from '@/pages/AI/Insight';
 import Settings from '@/pages/Settings/Settings';
+import Drugs from '@/pages/Catalogues/Drugs';
+import HealthInsurances from '@/pages/Catalogues/HealthInsurances';
+import StudyTypes from '@/pages/Catalogues/StudyTypes';
+import LaboratoryTypes from '@/pages/Catalogues/LaboratoryTypes';
+import Services from '@/pages/Catalogues/Services';
+import Tags from '@/pages/Catalogues/Tags';
+import Preoccupational from '@/pages/Preoccupational/Preoccupational';
+import PreoccupationalDetail from '@/pages/Preoccupational/PreoccupationalDetail';
 
 function ProtectedRoute({ children }: { children: ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -41,6 +51,8 @@ export default function App() {
       >
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
+        <Route path="doctors" element={<Doctors />} />
+        <Route path="doctors/:id" element={<DoctorDetail />} />
         <Route path="patients" element={<Patients />} />
         <Route path="patients/:id" element={<PatientDetail />} />
         <Route path="appointments" element={<Appointments />} />
@@ -72,6 +84,14 @@ export default function App() {
             </AiRoute>
           }
         />
+        <Route path="catalogues/drugs" element={<Drugs />} />
+        <Route path="catalogues/health-insurances" element={<HealthInsurances />} />
+        <Route path="catalogues/study-types" element={<StudyTypes />} />
+        <Route path="catalogues/laboratory-types" element={<LaboratoryTypes />} />
+        <Route path="catalogues/services" element={<Services />} />
+        <Route path="catalogues/tags" element={<Tags />} />
+        <Route path="preoccupational" element={<Preoccupational />} />
+        <Route path="preoccupational/:id" element={<PreoccupationalDetail />} />
         <Route path="settings" element={<Settings />} />
       </Route>
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

@@ -3,7 +3,7 @@ import { create } from 'zustand';
 export interface WorkspaceTab {
   /** Unique per open document, e.g. `health-record:p1`. */
   key: string;
-  kind: 'patient' | 'healthRecord';
+  kind: 'patient' | 'healthRecord' | 'doctor' | 'preoccupational';
   label: string;
   path: string;
   /**

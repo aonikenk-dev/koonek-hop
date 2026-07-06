@@ -45,7 +45,7 @@ export default function TopBar({ title, subtitle }: TopBarProps) {
       <div className="hidden sm:flex items-center gap-2 pl-3 border-l border-border">
         <div className="flex items-center gap-1.5 px-2.5 py-1.5 rounded border border-border bg-surface-2">
           {organization.logoUrl ? (
-            <img src={organization.logoUrl} alt={organization.name} className="w-4 object-contain shrink-0" />
+            <img src={organization.logoUrl} alt={organization.name} className="w-8 object-contain shrink-0" />
           ) : (
             <Building2 size={11} className="text-muted shrink-0" />
           )}

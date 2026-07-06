@@ -2,12 +2,16 @@ import { Link, useLocation } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { patients } from '@/data/mock/patients';
+import { doctors, doctorLabel } from '@/data/mock/doctors';
+import { preoccupationalExams } from '@/data/mock/preoccupational';
 
 const SEGMENT_LABEL_KEY: Record<string, string> = {
+  doctors: 'nav.doctors',
   patients: 'nav.patients',
   appointments: 'nav.appointments',
   'health-records': 'nav.healthRecords',
   prescriptions: 'nav.prescriptions',
+  preoccupational: 'nav.preoccupational',
   reports: 'nav.reports',
   settings: 'nav.settings',
   ai: 'nav.ai',
@@ -16,7 +20,16 @@ const SEGMENT_LABEL_KEY: Record<string, string> = {
   insight: 'nav.aiInsight',
 };
 
-/** Patient-scoped routes (/patients/:id, /health-records/:id) resolve the id segment to a name. */
+const CATALOGUE_CHILD_LABEL_KEY: Record<string, string> = {
+  drugs: 'nav.cataloguesDrugs',
+  'health-insurances': 'nav.cataloguesHealthInsurances',
+  'study-types': 'nav.cataloguesStudyTypes',
+  'laboratory-types': 'nav.cataloguesLaboratoryTypes',
+  services: 'nav.cataloguesServices',
+  tags: 'nav.cataloguesTags',
+};
+
+/** Routes where the :id segment resolves to a human-readable name via patient lookup. */
 const PATIENT_SCOPED_SEGMENTS = new Set(['patients', 'health-records']);
 
 interface Crumb {
@@ -36,19 +49,35 @@ export default function Breadcrumbs() {
   const crumbs: Crumb[] = [{ label: t('nav.dashboard'), path: '/dashboard' }];
 
   const [first, second] = segments;
-  if (first && SEGMENT_LABEL_KEY[first]) {
-    const isLast = !second;
-    crumbs.push({ label: t(SEGMENT_LABEL_KEY[first]), path: isLast ? undefined : `/${first}` });
-  }
 
-  if (second) {
-    if (first === 'ai' && SEGMENT_LABEL_KEY[second]) {
-      crumbs.push({ label: t(SEGMENT_LABEL_KEY[second]) });
-    } else if (first && PATIENT_SCOPED_SEGMENTS.has(first)) {
-      const patient = patients.find((p) => p.id === second);
-      crumbs.push({ label: patient ? `${patient.firstName} ${patient.lastName}` : second });
-    } else {
-      crumbs.push({ label: second });
+  if (first === 'catalogues' && second) {
+    crumbs.push({ label: t('nav.catalogues') });
+    if (CATALOGUE_CHILD_LABEL_KEY[second]) {
+      crumbs.push({ label: t(CATALOGUE_CHILD_LABEL_KEY[second]) });
+    }
+  } else {
+    if (first && SEGMENT_LABEL_KEY[first]) {
+      const isLast = !second;
+      crumbs.push({ label: t(SEGMENT_LABEL_KEY[first]), path: isLast ? undefined : `/${first}` });
+    }
+    if (second) {
+      if (first === 'ai' && SEGMENT_LABEL_KEY[second]) {
+        crumbs.push({ label: t(SEGMENT_LABEL_KEY[second]) });
+      } else if (first === 'preoccupational') {
+        const exam = preoccupationalExams.find((e) => e.id === second);
+        const label = exam
+          ? `${exam.patient.firstName} ${exam.patient.lastName}`
+          : second;
+        crumbs.push({ label });
+      } else if (first === 'doctors') {
+        const doctor = doctors.find((d) => d.id === second);
+        crumbs.push({ label: doctor ? doctorLabel(doctor) : second });
+      } else if (first && PATIENT_SCOPED_SEGMENTS.has(first)) {
+        const patient = patients.find((p) => p.id === second);
+        crumbs.push({ label: patient ? `${patient.firstName} ${patient.lastName}` : second });
+      } else {
+        crumbs.push({ label: second });
+      }
     }
   }
 
