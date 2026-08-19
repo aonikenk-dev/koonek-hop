@@ -1,15 +1,14 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { useWorkspaceTabs } from '@/store/workspaceTabs';
-import type { Patient } from '@/data/mock/patients';
 import {
   type PreoccupationalExam,
   type ExamType,
   type AptitudeResult,
 } from '@/data/mock/preoccupational';
-import { listExams, createExam } from '@/services/preoccupational';
+import { listExams, createExam, searchPatients, type PatientSearchResult } from '@/services/preoccupational';
 import Table from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
@@ -94,8 +93,10 @@ export default function Preoccupational() {
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState<CreateForm>(EMPTY_FORM);
-  const [linkedPatient, setLinkedPatient] = useState<Patient | null>(null);
+  const [linkedPatient, setLinkedPatient] = useState<PatientSearchResult | null>(null);
   const [submitted, setSubmitted] = useState(false);
+
+  const doSearch = useCallback((q: string) => searchPatients(q), []);
 
   useEffect(() => {
     void listExams().then((data) => { setExams(data); setLoading(false); }).catch(() => setLoading(false));
@@ -120,20 +121,20 @@ export default function Preoccupational() {
     );
   });
 
-  const handlePatientSelect = (patient: Patient) => {
-    setLinkedPatient(patient);
+  const handlePatientSelect = (result: PatientSearchResult) => {
+    setLinkedPatient(result);
     setForm((f) => ({
       ...f,
-      firstName: patient.firstName,
-      lastName: patient.lastName,
-      nationalIdType: patient.nationalIdType,
-      documentId: patient.documentId,
+      firstName: result.firstName,
+      lastName: result.lastName,
+      nationalIdType: result.nationalIdType,
+      documentId: result.documentId,
     }));
   };
 
   const handlePatientClear = () => {
     setLinkedPatient(null);
-    setForm((f) => ({ ...f, firstName: '', lastName: '', documentId: '' }));
+    setForm((f) => ({ ...f, firstName: '', lastName: '', documentId: '', nationalIdType: 'DNI' }));
   };
 
   const handleClose = () => { setShowCreate(false); setForm(EMPTY_FORM); setLinkedPatient(null); setSubmitted(false); };
@@ -157,8 +158,21 @@ export default function Preoccupational() {
           lastName: form.lastName,
           nationalIdType: form.nationalIdType,
           documentId: form.documentId,
-          linkedPatientId: linkedPatient?.id,
+          linkedPatientId: linkedPatient?.linkedPatientId,
           addToPatients: linkedPatient ? false : form.addToPatients,
+          // Extended fields pre-filled from previous preoccupational exam
+          ...(linkedPatient?.source === 'preoccupational' && {
+            cuil: linkedPatient.cuil,
+            dateOfBirth: linkedPatient.dateOfBirth,
+            birthPlace: linkedPatient.birthPlace,
+            maritalStatus: linkedPatient.maritalStatus,
+            numberOfChildren: linkedPatient.numberOfChildren,
+            address: linkedPatient.address,
+            city: linkedPatient.city,
+            postalCode: linkedPatient.postalCode,
+            state: linkedPatient.state,
+            country: linkedPatient.country,
+          }),
         },
       });
       setExams((prev) => [newExam, ...prev]);
@@ -309,13 +323,18 @@ export default function Preoccupational() {
           <div>
             <p className="text-xs font-mono text-muted tracking-widest uppercase mb-2">{t('preoccupational.patientSearch')}</p>
             <PatientSearch
+              searchFn={doSearch}
               placeholder={t('preoccupational.patientSearchPlaceholder')}
               onSelect={handlePatientSelect}
               onClear={handlePatientClear}
               selectedName={linkedPatient ? `${linkedPatient.firstName} ${linkedPatient.lastName}` : undefined}
             />
             {linkedPatient && (
-              <p className="mt-1.5 text-xs text-moss">{t('preoccupational.patientFound')}</p>
+              <p className="mt-1.5 text-xs text-moss">
+                {linkedPatient.source === 'preoccupational'
+                  ? 'Paciente encontrado en exámenes previos — datos pre-cargados.'
+                  : t('preoccupational.patientFound')}
+              </p>
             )}
           </div>
 

@@ -1,12 +1,37 @@
 import { apiFetch } from './api';
 import type { PreoccupationalExam, AttachmentFile } from '@/data/mock/preoccupational';
 
+export interface PatientSearchResult {
+  source: 'preoccupational' | 'patients';
+  id: string;
+  firstName: string;
+  lastName: string;
+  nationalIdType: 'DNI' | 'LE' | 'OTRO';
+  documentId: string;
+  cuil?: string;
+  dateOfBirth?: string;
+  birthPlace?: string;
+  maritalStatus?: string;
+  numberOfChildren?: number;
+  address?: string;
+  city?: string;
+  postalCode?: string;
+  state?: string;
+  country?: string;
+  linkedPatientId?: string;
+}
+
+export async function searchPatients(q: string): Promise<PatientSearchResult[]> {
+  if (q.trim().length < 2) return [];
+  return apiFetch<PatientSearchResult[]>(`/api/preoccupational/patient-search?q=${encodeURIComponent(q.trim())}`);
+}
+
 interface ListResponse {
   data: PreoccupationalExam[];
   pagination: { total: number; page: number; limit: number };
 }
 
-/** Strip blob: URLs from file arrays before sending to the server — they are session-only. */
+/** Strip any remaining blob: URLs (session-only) — shouldn't exist now that uploads go via API. */
 function sanitizeFiles(files: AttachmentFile[] | undefined): Array<{ id: string; name: string; url: string }> {
   if (!files) return [];
   return files

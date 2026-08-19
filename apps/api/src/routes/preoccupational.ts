@@ -86,6 +86,96 @@ const PATIENT_INCLUDE = {
   patient: true,
 } as const;
 
+// ── GET /preoccupational/patient-search ──────────────────────────────────────
+// Search preemployment_patients then patients by name or documentId.
+// Case-insensitive and accent-insensitive via unaccent() PostgreSQL extension.
+// Must be declared before /:id to avoid "patient-search" being treated as an id.
+router.get('/patient-search', async (req: Request, res: Response) => {
+  const orgId = req.auth!.organizationId;
+  const q = ((req.query['q'] as string) ?? '').trim();
+
+  if (q.length < 2) return res.json([]);
+
+  // %query% pattern used by both queries
+  const like = `%${q}%`;
+
+  type PreRow = {
+    id: string; firstName: string; lastName: string; nationalIdType: string;
+    documentId: string; cuil: string; dateOfBirth: string; birthPlace: string;
+    maritalStatus: string; numberOfChildren: number; address: string; city: string;
+    postalCode: string; state: string; country: string; patientId: string | null;
+  };
+  type PatRow = { id: string; firstName: string; lastName: string; documentId: string | null };
+
+  const [preRows, patRows] = await Promise.all([
+    prisma.$queryRaw<PreRow[]>`
+      SELECT pe.id, pe."firstName", pe."lastName", pe."nationalIdType", pe."documentId",
+             pe.cuil, pe."dateOfBirth", pe."birthPlace", pe."maritalStatus",
+             pe."numberOfChildren", pe.address, pe.city, pe."postalCode",
+             pe.state, pe.country, pe."patientId"
+      FROM preemployment_patients pe
+      JOIN preoccupational_exams ex ON ex.id = pe."examId"
+      WHERE ex."organizationId" = ${orgId}
+        AND (
+          unaccent(lower(pe."firstName")) LIKE unaccent(lower(${like}))
+          OR unaccent(lower(pe."lastName")) LIKE unaccent(lower(${like}))
+          OR pe."documentId" LIKE ${like}
+        )
+      ORDER BY pe."lastName" ASC
+      LIMIT 8
+    `,
+    prisma.$queryRaw<PatRow[]>`
+      SELECT id, "firstName", "lastName", "documentId"
+      FROM patients
+      WHERE "organizationId" = ${orgId}
+        AND (
+          unaccent(lower("firstName")) LIKE unaccent(lower(${like}))
+          OR unaccent(lower("lastName")) LIKE unaccent(lower(${like}))
+          OR "documentId" LIKE ${like}
+        )
+      ORDER BY "lastName" ASC
+      LIMIT 5
+    `,
+  ]);
+
+  const seenDocIds = new Set(preRows.map((p) => p.documentId));
+
+  const results = [
+    ...preRows.map((p) => ({
+      source: 'preoccupational',
+      id: p.id,
+      firstName: p.firstName,
+      lastName: p.lastName,
+      nationalIdType: p.nationalIdType,
+      documentId: p.documentId,
+      cuil: p.cuil,
+      dateOfBirth: p.dateOfBirth,
+      birthPlace: p.birthPlace,
+      maritalStatus: p.maritalStatus,
+      numberOfChildren: p.numberOfChildren,
+      address: p.address,
+      city: p.city,
+      postalCode: p.postalCode,
+      state: p.state,
+      country: p.country,
+      linkedPatientId: p.patientId ?? undefined,
+    })),
+    ...patRows
+      .filter((p) => !seenDocIds.has(p.documentId ?? ''))
+      .map((p) => ({
+        source: 'patients',
+        id: p.id,
+        firstName: p.firstName,
+        lastName: p.lastName,
+        nationalIdType: 'DNI',
+        documentId: p.documentId ?? '',
+        linkedPatientId: p.id,
+      })),
+  ];
+
+  res.json(results);
+});
+
 // ── GET /preoccupational ──────────────────────────────────────────────────────
 // List exams for the authenticated organization.
 // Query params: search (string), status (draft|completed), page (int), limit (int)

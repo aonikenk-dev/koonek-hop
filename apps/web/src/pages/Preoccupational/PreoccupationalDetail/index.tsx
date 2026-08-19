@@ -80,79 +80,109 @@ export default function PreoccupationalDetail() {
     setIsPrinting(true);
 
     try {
-      const [{ default: html2canvas }, { PDFDocument }] = await Promise.all([
+      const [{ default: html2canvas }, { PDFDocument, rgb }] = await Promise.all([
         import('html2canvas'),
         import('pdf-lib'),
       ]);
 
       const pdfDoc = await PDFDocument.create();
       const A4: [number, number] = [595.28, 841.89];
-
-      // Temporarily reveal the container for html2canvas — it stays off-screen (left: -9999px).
       const container = printRef.current!;
       container.style.visibility = 'visible';
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      let headerImg: any = null;
+      let headerPdfH = 0;
+
+      // Capture all form pages as JPEG bytes before hiding container
+      type CapturedPage = { imgBytes: ArrayBuffer; isDeclaration: boolean };
+      const capturedPages: CapturedPage[] = [];
+
       try {
+        // 1. Capture the standalone header strip for sworn declaration pages
+        const headerEl = container.querySelector<HTMLElement>('[data-pv-header]');
+        if (headerEl) {
+          const hCanvas = await html2canvas(headerEl, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false });
+          const hBytes = await fetch(hCanvas.toDataURL('image/jpeg', 0.95)).then((r) => r.arrayBuffer());
+          headerImg = await pdfDoc.embedJpg(hBytes);
+          headerPdfH = Math.round((headerImg.height / headerImg.width) * A4[0]);
+        }
+
+        // 2. Capture all form pages, flagging the declaration (Datos y Antecedentes) page
         const pageEls = Array.from(container.querySelectorAll<HTMLElement>('.pv-page'));
         for (const pageEl of pageEls) {
-          const canvas = await html2canvas(pageEl, {
-            scale: 2,
-            useCORS: true,
-            backgroundColor: '#ffffff',
-            logging: false,
-          });
-          const jpegUrl = canvas.toDataURL('image/jpeg', 0.92);
-          const imgBytes = await fetch(jpegUrl).then((r) => r.arrayBuffer());
-          const img = await pdfDoc.embedJpg(imgBytes);
-          const page = pdfDoc.addPage(A4);
-          const scale = Math.min(A4[0] / img.width, A4[1] / img.height);
-          page.drawImage(img, {
-            x: (A4[0] - img.width * scale) / 2,
-            y: (A4[1] - img.height * scale) / 2,
-            width: img.width * scale,
-            height: img.height * scale,
-          });
+          const canvas = await html2canvas(pageEl, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false });
+          const imgBytes = await fetch(canvas.toDataURL('image/jpeg', 0.92)).then((r) => r.arrayBuffer());
+          capturedPages.push({ imgBytes, isDeclaration: pageEl.dataset.pvPage === 'declaration' });
         }
       } finally {
         container.style.visibility = 'hidden';
       }
 
-      // Merge each attachment file into the PDF
-      for (const att of exam.attachments) {
-        for (const file of att.files) {
+      // Helper: overlay header on any pdf-lib page (used only for sworn declaration files)
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const drawHeader = (page: any) => {
+        if (!headerImg || headerPdfH === 0) return;
+        const w: number = page.getWidth();
+        const h: number = page.getHeight();
+        page.drawRectangle({ x: 0, y: h - headerPdfH, width: w, height: headerPdfH, color: rgb(1, 1, 1) });
+        page.drawImage(headerImg, { x: 0, y: h - headerPdfH, width: w, height: headerPdfH });
+      };
+
+      // Helper: embed image file as A4 page, optionally with header overlay
+      const embedImagePage = async (fileBytes: ArrayBuffer, ext: string, withHeader: boolean) => {
+        const img = ext === 'png' ? await pdfDoc.embedPng(fileBytes) : await pdfDoc.embedJpg(fileBytes);
+        const page = pdfDoc.addPage(A4);
+        const margin = 16;
+        if (withHeader) {
+          const contentTop = A4[1] - headerPdfH - margin;
+          const scale = Math.min((A4[0] - margin * 2) / img.width, (contentTop - margin) / img.height);
+          drawHeader(page);
+          page.drawImage(img, { x: (A4[0] - img.width * scale) / 2, y: contentTop - img.height * scale, width: img.width * scale, height: img.height * scale });
+        } else {
+          const scale = Math.min((A4[0] - margin * 2) / img.width, (A4[1] - margin * 2) / img.height);
+          page.drawImage(img, { x: (A4[0] - img.width * scale) / 2, y: (A4[1] - img.height * scale) / 2, width: img.width * scale, height: img.height * scale });
+        }
+      };
+
+      // Helper: append a list of attachment files, optionally with header on each page
+      type AttFile = { name: string; url: string };
+      const embedFiles = async (files: AttFile[], withHeader: boolean) => {
+        for (const file of files) {
           const ext = (file.name.split('.').pop() ?? '').toLowerCase();
           try {
             const fileBytes = await fetch(file.url).then((r) => r.arrayBuffer());
             if (ext === 'pdf') {
               const srcDoc = await PDFDocument.load(fileBytes, { ignoreEncryption: true });
               const copied = await pdfDoc.copyPages(srcDoc, srcDoc.getPageIndices());
-              copied.forEach((p) => pdfDoc.addPage(p));
-            } else if (ext === 'jpg' || ext === 'jpeg') {
-              const img = await pdfDoc.embedJpg(fileBytes);
-              const page = pdfDoc.addPage(A4);
-              const margin = 20;
-              const scale = Math.min((A4[0] - margin * 2) / img.width, (A4[1] - margin * 2) / img.height);
-              page.drawImage(img, {
-                x: (A4[0] - img.width * scale) / 2,
-                y: (A4[1] - img.height * scale) / 2,
-                width: img.width * scale,
-                height: img.height * scale,
-              });
-            } else if (ext === 'png') {
-              const img = await pdfDoc.embedPng(fileBytes);
-              const page = pdfDoc.addPage(A4);
-              const margin = 20;
-              const scale = Math.min((A4[0] - margin * 2) / img.width, (A4[1] - margin * 2) / img.height);
-              page.drawImage(img, {
-                x: (A4[0] - img.width * scale) / 2,
-                y: (A4[1] - img.height * scale) / 2,
-                width: img.width * scale,
-                height: img.height * scale,
-              });
+              copied.forEach((p) => { pdfDoc.addPage(p); if (withHeader) drawHeader(p); });
+            } else if (ext === 'jpg' || ext === 'jpeg' || ext === 'png') {
+              await embedImagePage(fileBytes, ext === 'jpeg' ? 'jpg' : ext, withHeader);
             }
           } catch {
-            // Skip files that can't be processed
+            // skip unprocessable files
           }
         }
+      };
+
+      // 3. Build PDF: form pages, interleaving sworn declaration files after their page
+      for (const { imgBytes, isDeclaration } of capturedPages) {
+        const img = await pdfDoc.embedJpg(imgBytes);
+        const page = pdfDoc.addPage(A4);
+        const scale = Math.min(A4[0] / img.width, A4[1] / img.height);
+        page.drawImage(img, { x: (A4[0] - img.width * scale) / 2, y: (A4[1] - img.height * scale) / 2, width: img.width * scale, height: img.height * scale });
+
+        // Sworn declaration files go immediately after the "Datos y Antecedentes" page, WITH header
+        if (isDeclaration) {
+          await embedFiles(exam.swornDeclarationFiles ?? [], true);
+        }
+      }
+
+      // 4. Remaining file groups appended at end WITHOUT header
+      await embedFiles(exam.spirometryFiles ?? [], false);
+      await embedFiles(exam.xrayFiles ?? [], false);
+      for (const att of exam.attachments) {
+        await embedFiles(att.files, false);
       }
 
       const pdfBytes = await pdfDoc.save();

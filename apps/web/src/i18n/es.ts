@@ -45,6 +45,7 @@ const es = {
       dropzone: 'Arrastrá archivos aquí o hacé click para subir',
       formats: 'PDF, JPG, PNG',
       uploaded: 'Archivos cargados',
+      uploading: 'Subiendo...',
       view: 'Ver',
       remove: 'Quitar',
     },

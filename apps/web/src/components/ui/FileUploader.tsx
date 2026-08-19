@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
-import { Upload, FileText, Eye, X } from 'lucide-react';
+import { Upload, FileText, Eye, X, Loader2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
+import { apiFetch } from '@/services/api';
 import type { AttachmentFile } from '@/data/mock/preoccupational';
 
 interface Props {
@@ -9,29 +10,44 @@ interface Props {
   accept?: string;
 }
 
+async function uploadFile(file: File): Promise<AttachmentFile> {
+  const form = new FormData();
+  form.append('file', file);
+  // apiFetch handles auth header; skip Content-Type so browser sets multipart boundary
+  const token = sessionStorage.getItem('koonek_token');
+  const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+  const res = await fetch(`${BASE_URL}/api/upload`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (!res.ok) throw new Error('Upload failed');
+  return res.json() as Promise<AttachmentFile>;
+}
+
 export default function FileUploader({ files, onChange, accept = '.pdf,.jpg,.jpeg,.png' }: Props) {
   const { t } = useApp();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
+  const [uploading, setUploading] = useState(false);
 
-  const addFiles = (fileList: FileList | null) => {
+  const addFiles = async (fileList: FileList | null) => {
     if (!fileList || fileList.length === 0) return;
-    const newEntries: AttachmentFile[] = Array.from(fileList).map((f) => ({
-      id: `fu-${Date.now()}-${Math.random().toString(36).slice(2)}`,
-      name: f.name,
-      url: URL.createObjectURL(f),
-    }));
-    onChange([...files, ...newEntries]);
+    setUploading(true);
+    try {
+      const uploaded = await Promise.all(Array.from(fileList).map(uploadFile));
+      onChange([...files, ...uploaded]);
+    } finally {
+      setUploading(false);
+    }
   };
 
-  const removeFile = (id: string) => {
-    onChange(files.filter((f) => f.id !== id));
-  };
+  const removeFile = (id: string) => onChange(files.filter((f) => f.id !== id));
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragging(false);
-    addFiles(e.dataTransfer.files);
+    void addFiles(e.dataTransfer.files);
   };
 
   return (
@@ -42,14 +58,14 @@ export default function FileUploader({ files, onChange, accept = '.pdf,.jpg,.jpe
         multiple
         accept={accept}
         className="sr-only"
-        onChange={(e) => { addFiles(e.target.files); e.target.value = ''; }}
+        onChange={(e) => { void addFiles(e.target.files); e.target.value = ''; }}
       />
 
       <div
         role="button"
         tabIndex={0}
-        onClick={() => fileInputRef.current?.click()}
-        onKeyDown={(e) => e.key === 'Enter' && fileInputRef.current?.click()}
+        onClick={() => !uploading && fileInputRef.current?.click()}
+        onKeyDown={(e) => e.key === 'Enter' && !uploading && fileInputRef.current?.click()}
         onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
         onDragLeave={() => setDragging(false)}
         onDrop={handleDrop}
@@ -57,12 +73,22 @@ export default function FileUploader({ files, onChange, accept = '.pdf,.jpg,.jpe
           'flex flex-col items-center justify-center gap-2 rounded-md border-2 border-dashed px-6 py-8 cursor-pointer transition-colors select-none',
           dragging
             ? 'border-moss bg-moss/10 text-moss'
-            : 'border-border text-muted hover:border-moss/60 hover:text-moss/80',
+            : uploading
+              ? 'border-border text-muted cursor-wait'
+              : 'border-border text-muted hover:border-moss/60 hover:text-moss/80',
         ].join(' ')}
       >
-        <Upload size={24} />
-        <p className="text-sm font-mono text-center">{t('common.fileUpload.dropzone')}</p>
-        <p className="text-2xs font-mono text-muted">{t('common.fileUpload.formats')}</p>
+        {uploading ? (
+          <Loader2 size={24} className="animate-spin" />
+        ) : (
+          <Upload size={24} />
+        )}
+        <p className="text-sm font-mono text-center">
+          {uploading ? t('common.fileUpload.uploading') : t('common.fileUpload.dropzone')}
+        </p>
+        {!uploading && (
+          <p className="text-2xs font-mono text-muted">{t('common.fileUpload.formats')}</p>
+        )}
       </div>
 
       {files.length > 0 && (

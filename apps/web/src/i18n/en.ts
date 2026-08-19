@@ -47,6 +47,7 @@ const en: Dictionary = {
       dropzone: 'Drag files here or click to upload',
       formats: 'PDF, JPG, PNG',
       uploaded: 'Uploaded files',
+      uploading: 'Uploading...',
       view: 'View',
       remove: 'Remove',
     },

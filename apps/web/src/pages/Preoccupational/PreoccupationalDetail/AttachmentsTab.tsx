@@ -1,5 +1,5 @@
 import { useState, type ChangeEvent, type FormEvent } from 'react';
-import { Plus, Paperclip, X, FileText, Pencil } from 'lucide-react';
+import { Plus, Paperclip, X, FileText, Pencil, Loader2 } from 'lucide-react';
 import type {
   PreoccupationalExam,
   PreoccupationalAttachment,
@@ -48,6 +48,20 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
   );
 }
 
+async function uploadFile(file: File): Promise<AttachmentFile> {
+  const form = new FormData();
+  form.append('file', file);
+  const token = sessionStorage.getItem('koonek_token');
+  const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000';
+  const res = await fetch(`${BASE_URL}/api/upload`, {
+    method: 'POST',
+    headers: token ? { Authorization: `Bearer ${token}` } : {},
+    body: form,
+  });
+  if (!res.ok) throw new Error('Upload failed');
+  return res.json() as Promise<AttachmentFile>;
+}
+
 function AttFormFields({
   form,
   setForm,
@@ -57,20 +71,19 @@ function AttFormFields({
   setForm: React.Dispatch<React.SetStateAction<AttForm>>;
   t: (key: string) => string;
 }) {
-  const handleFilePick = (e: ChangeEvent<HTMLInputElement>) => {
+  const [uploading, setUploading] = useState(false);
+
+  const handleFilePick = async (e: ChangeEvent<HTMLInputElement>) => {
     const picked = Array.from(e.target.files ?? []);
-    setForm((f) => ({
-      ...f,
-      files: [
-        ...f.files,
-        ...picked.map((file) => ({
-          id: `attf-${Date.now()}-${file.name}`,
-          name: file.name,
-          url: URL.createObjectURL(file),
-        })),
-      ],
-    }));
     e.target.value = '';
+    if (picked.length === 0) return;
+    setUploading(true);
+    try {
+      const uploaded = await Promise.all(picked.map(uploadFile));
+      setForm((f) => ({ ...f, files: [...f.files, ...uploaded] }));
+    } finally {
+      setUploading(false);
+    }
   };
 
   const removeFile = (id: string) =>
@@ -136,10 +149,10 @@ function AttFormFields({
             </a>
           ))}
         </div>
-        <label className="btn-secondary text-xs cursor-pointer inline-flex">
-          <Paperclip size={13} />
-          {t('laboratories.form.attachFile')}
-          <input type="file" multiple onChange={handleFilePick} className="hidden" />
+        <label className={`btn-secondary text-xs inline-flex ${uploading ? 'opacity-60 cursor-wait pointer-events-none' : 'cursor-pointer'}`}>
+          {uploading ? <Loader2 size={13} className="animate-spin" /> : <Paperclip size={13} />}
+          {uploading ? t('common.fileUpload.uploading') : t('laboratories.form.attachFile')}
+          <input type="file" multiple onChange={(e) => { void handleFilePick(e); }} className="hidden" disabled={uploading} />
         </label>
       </div>
     </>

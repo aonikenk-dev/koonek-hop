@@ -57,9 +57,8 @@ const APTITUDE_LABEL: Record<string, string> = {
 type FinalExamKey = keyof XrayExam['finalExam'];
 
 const FINAL_EXAM_COLS: FinalExamKey[][] = [
-  ['fisico', 'dermatologico', 'osteoarticularMMSS', 'osteoarticularMMII', 'neumonologico', 'neurologico', 'hematologico', 'orl'],
-  ['apDigestivo', 'psicologico', 'cardiovascular', 'urologicoNefrologico', 'oftalmologico', 'endocrinologico', 'ginecologico', 'audiometria'],
-  ['espirometria', 'laringoscopia', 'rxTx', 'rxCLS', 'rxMunecas', 'ecg', 'laboratorioInespecifico', 'laboratorioToxicologico'],
+  ['fisico', 'dermatologico', 'osteoarticularMMSS', 'osteoarticularMMII', 'neumonologico', 'neurologico', 'hematologico', 'orl', 'apDigestivo', 'psicologico', 'cardiovascular', 'urologicoNefrologico'],
+  ['oftalmologico', 'endocrinologico', 'ginecologico', 'audiometria', 'espirometria', 'laringoscopia', 'rxTx', 'rxCLS', 'rxMunecas', 'ecg', 'laboratorioInespecifico', 'laboratorioToxicologico'],
 ];
 
 const FINAL_EXAM_LABELS: Record<FinalExamKey, string> = {
@@ -78,6 +77,26 @@ const ATTACHMENT_CATEGORY_LABELS: Record<string, string> = {
   spirometry: 'Espirometría', ecg: 'ECG', xray: 'Radiografía', audiometry: 'Audiometría',
   drugTest: 'Test de drogas', lab: 'Laboratorio', psycho: 'Psicotécnico', eeg: 'EEG', other: 'Otro',
 };
+
+function PageHeader() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 6, borderBottom: '2px solid #000', paddingBottom: 10, marginBottom: 16 }}>
+      {organization.logoForPrintUrl && (
+        <img
+          src={`${window.location.origin}${organization.logoForPrintUrl}`}
+          alt={organization.name}
+          crossOrigin="anonymous"
+          style={{ width: 250, objectFit: 'contain' }}
+        />
+      )}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {/* <div style={{ fontSize: '15pt', fontWeight: 'bold', fontStyle: 'italic' }}>{organization.name}</div>
+        <div style={{ fontSize: '9pt', fontWeight: 'bold' }}>{organization.specialty}</div> */}
+        <div style={{ fontSize: '9pt' }}>{organization.location}</div>
+      </div>
+    </div>
+  );
+}
 
 const cb = (v: boolean) => v ? '☑' : '☐';
 const d = (v?: string | number | null) =>
@@ -104,7 +123,7 @@ function Check({ label, checked }: { label: string; checked: boolean }) {
 
 function H2({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontWeight: 'bold', textTransform: 'uppercase', borderBottom: '1.5px solid #000', paddingBottom: 2, marginTop: 14, marginBottom: 6, fontSize: '10pt' }}>
+    <div style={{ fontWeight: 'bold', textTransform: 'uppercase', borderBottom: '1.5px solid #000', paddingBottom: 5, marginTop: 14, marginBottom: 6, fontSize: '10pt' }}>
       {children}
     </div>
   );
@@ -112,7 +131,7 @@ function H2({ children }: { children: React.ReactNode }) {
 
 function H3({ children }: { children: React.ReactNode }) {
   return (
-    <div style={{ fontWeight: 'bold', fontSize: '9.5pt', marginTop: 8, marginBottom: 3, textDecoration: 'underline' }}>
+    <div style={{ fontWeight: 'bold', fontSize: '9.5pt', marginTop: 8, marginBottom: 4, borderBottom: '1px solid #000', paddingBottom: 4 }}>
       {children}
     </div>
   );
@@ -156,7 +175,7 @@ export default function PrintView({ exam }: Props) {
     width: '210mm',
     minHeight: '297mm',
     margin: '0 auto',
-    fontFamily: 'Arial, Helvetica, sans-serif',
+    fontFamily: 'Montserrat, Arial, sans-serif',
     fontSize: '10pt',
     color: '#000',
     lineHeight: 1.45,
@@ -177,22 +196,14 @@ export default function PrintView({ exam }: Props) {
         .pv-exam-type-under { text-decoration: underline; }
       `}</style>
 
+      {/* Standalone header strip — captured by handlePrint for attachment pages */}
+      <div data-pv-header style={{ padding: '8mm 20mm 4mm', width: '210mm', fontFamily: 'Montserrat, Arial, sans-serif', background: '#fff' }}>
+        <PageHeader />
+      </div>
+
       {/* ─── PAGE 1: Cover ─── */}
       <div className="pv-page" style={pageStyle}>
-        <div style={{ display: 'flex', alignItems: 'center', textAlign: 'center', gap: 80, borderBottom: '2px solid #000', paddingBottom: 10, marginBottom: 16 }}>
-          {organization.logoUrl && (
-            <img
-              src={`${window.location.origin}${organization.logoUrl}`}
-              alt={organization.name}
-              style={{ width: 150, height: 135, objectFit: 'contain', flexShrink: 0 }}
-            />
-          )}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-            <div style={{ fontSize: '15pt', fontWeight: 'bold', fontStyle: 'italic' }}>{organization.name}</div>
-            <div style={{ fontSize: '9pt', fontWeight: 'bold' }}>{organization.specialty}</div>
-            <div style={{ fontSize: '9pt' }}>{organization.location}</div>
-          </div>
-        </div>
+        <PageHeader />
 
         <div style={{ textAlign: 'center', margin: '40px 0' }}>
           <div style={{ fontSize: '22pt', fontWeight: 'bold', fontStyle: 'italic', textDecoration: 'underline', letterSpacing: 2 }}>
@@ -223,9 +234,10 @@ export default function PrintView({ exam }: Props) {
       </div>
 
       {/* ─── PAGE 2: Declaración Jurada ─── */}
-      <div className="pv-page" style={pageStyle}>
+      <div className="pv-page" data-pv-page="declaration" style={pageStyle}>
+        <PageHeader />
         <div style={{ textAlign: 'center', fontWeight: 'bold', marginBottom: 8 }}>
-          <div style={{ fontSize: '13pt', textDecoration: 'underline', textTransform: 'uppercase' }}>Declaración Jurada del Trabajador</div>
+          <div style={{ fontSize: '13pt', textDecoration: 'underline', textTransform: 'uppercase' }}>Datos y antecedentes del Trabajador</div>
           <div style={{ fontSize: '9pt' }}>ESTOS ANTECEDENTES SON PARA USO CONFIDENCIAL DEL SERVICIO MÉDICO</div>
         </div>
         <div style={{ fontSize: '10pt', marginBottom: 6 }}><strong>EMPRESA:</strong> {exam.company}</div>
@@ -278,23 +290,7 @@ export default function PrintView({ exam }: Props) {
           ))}
           {familyHistory.other && <span>Otras: {familyHistory.other}</span>}
         </div>
-
-        <H2>F) Antecedentes Médicos — Declaración Jurada RES 43/97 SRT LEY 24.557</H2>
-        <Row label="Cirugías" value={d(medicalHistory.surgeries)} />
-        <div style={{ marginTop: 6, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0 16px' }}>
-          {conditionCols.map((col, ci) => (
-            <div key={ci}>
-              {col.map((key) => (
-                <Check key={key} label={CONDITION_LABELS[key]} checked={medicalHistory.conditions[key]} />
-              ))}
-            </div>
-          ))}
-        </div>
-        {medicalHistory.medicalObservations && (
-          <div style={{ marginTop: 6, fontSize: '9.5pt' }}>
-            <strong>Observaciones del médico:</strong> {medicalHistory.medicalObservations}
-          </div>
-        )}
+        <H2>F) Declaración Jurada RES 43/97 SRT LEY 24.557</H2>
         <div style={{ marginTop: 10, fontSize: '8.5pt', fontStyle: 'italic', borderTop: '1px solid #ccc', paddingTop: 6 }}>
           Declaro que la información suministrada es completa y verídica. La falta de cooperación será suficiente para suspender el examen de acuerdo a Código Penal Art. 293.
         </div>
@@ -302,6 +298,7 @@ export default function PrintView({ exam }: Props) {
 
       {/* ─── PAGE 3: Antecedentes Personales + Examen Clínico ─── */}
       <div className="pv-page" style={pageStyle}>
+        <PageHeader />
         <div style={{ fontWeight: 'bold', fontSize: '10pt', marginBottom: 10 }}>
           <span>Nombres: {patient.firstName}</span>
           <span style={{ marginLeft: 32 }}>Apellidos: {patient.lastName}</span>
@@ -432,6 +429,7 @@ export default function PrintView({ exam }: Props) {
 
       {/* ─── PAGE 4: Espirometría ─── */}
       <div className="pv-page" style={pageStyle}>
+        <PageHeader />
         <div style={{ textAlign: 'center', fontWeight: 'bold', fontSize: '14pt', marginBottom: 12, textTransform: 'uppercase', fontStyle: 'italic' }}>
           Antecedentes de Valor para la Interpretación de la Espirometría
         </div>
@@ -513,6 +511,7 @@ export default function PrintView({ exam }: Props) {
 
       {/* ─── PAGE 5: Examen Radiográfico + Examen Final ─── */}
       <div className="pv-page" style={pageStyle}>
+        <PageHeader />
         <div style={{ fontSize: '9.5pt', marginBottom: 10 }}>
           <span>Nombres: {patient.firstName}</span>
           <span style={{ marginLeft: 32 }}>Apellidos: {patient.lastName}</span>
@@ -538,9 +537,9 @@ export default function PrintView({ exam }: Props) {
             <tr>
               {FINAL_EXAM_COLS.map((_, ci) => (
                 <>
-                  <th key={`h-exam-${ci}`} style={{ textAlign: 'left', padding: '2px 4px', border: '1px solid #999', width: '22%' }}>Examen</th>
-                  <th key={`h-n-${ci}`} style={{ textAlign: 'center', padding: '2px 4px', border: '1px solid #999', width: '5%' }}>Normal</th>
-                  <th key={`h-p-${ci}`} style={{ textAlign: 'center', padding: '2px 4px', border: '1px solid #999', width: '6.3%' }}>Patológico</th>
+                  <th key={`h-exam-${ci}`} style={{ textAlign: 'left', padding: '4px 8px', border: '1px solid #999', width: '40%' }}>Examen</th>
+                  <th key={`h-n-${ci}`} style={{ textAlign: 'center', padding: '4px 8px', border: '1px solid #999', width: '5%' }}>N</th>
+                  <th key={`h-p-${ci}`} style={{ textAlign: 'center', padding: '4px 8px', border: '1px solid #999', width: '5%' }}>P</th>
                 </>
               ))}
             </tr>
@@ -551,12 +550,12 @@ export default function PrintView({ exam }: Props) {
                 {FINAL_EXAM_COLS.map((col, ci) => {
                   const key = col[ri];
                   if (!key) return <><td key={`e${ci}`} /><td key={`n${ci}`} /><td key={`p${ci}`} /></>;
-                  const val = xrayExam.finalExam[key];
+                  const val = xrayExam.finalExam && xrayExam.finalExam[key];
                   return (
                     <>
-                      <td key={`e-${ci}-${ri}`} style={{ padding: '2px 4px', border: '1px solid #ddd' }}>{FINAL_EXAM_LABELS[key]}</td>
-                      <td key={`n-${ci}-${ri}`} style={{ textAlign: 'center', padding: '2px 4px', border: '1px solid #ddd' }}>{val === 'normal' ? '☑' : '☐'}</td>
-                      <td key={`p-${ci}-${ri}`} style={{ textAlign: 'center', padding: '2px 4px', border: '1px solid #ddd' }}>{val === 'pathological' ? '☑' : '☐'}</td>
+                      <td key={`e-${ci}-${ri}`} style={{ padding: '4px 8px', border: '1px solid #ddd' }}>{FINAL_EXAM_LABELS[key]}</td>
+                      <td key={`n-${ci}-${ri}`} style={{ textAlign: 'center', padding: '4px 8px', border: '1px solid #ddd' }}>{val === 'normal' ? '☑' : '☐'}</td>
+                      <td key={`p-${ci}-${ri}`} style={{ textAlign: 'center', padding: '4px 8px', border: '1px solid #ddd' }}>{val === 'pathological' ? '☑' : '☐'}</td>
                     </>
                   );
                 })}
@@ -568,6 +567,7 @@ export default function PrintView({ exam }: Props) {
 
       {/* ─── PAGE 6: Resultado + Conclusión ─── */}
       <div className="pv-page" style={pageStyle}>
+        <PageHeader />
         <H2>Resultado</H2>
         <div style={{ fontSize: '9pt', border: '1px solid #ccc', padding: '6px 8px', marginBottom: 10, fontStyle: 'italic' }}>
           Resultado examen periódico de acuerdo a la Ley Nº 19.587/72 Dto. Nº 351/79 y Ley Nº 24.557/95 Dto Nº 658/96, Resol Nº 43/97
@@ -610,15 +610,18 @@ export default function PrintView({ exam }: Props) {
           </div>
         )}
 
-        <div style={{ marginTop: 48, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, textAlign: 'center', fontSize: '9.5pt' }}>
+        <div style={{ marginTop: 72, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 32, textAlign: 'center', fontSize: '9.5pt' }}>
           <div>
-            <div style={{ borderTop: '1px solid #000', paddingTop: 4 }}>Firma del Médico</div>
+            <div style={{ minHeight: 56, borderBottom: '1px solid #000', marginBottom: 6 }} />
+            <div>Firma del Médico</div>
           </div>
           <div>
-            <div style={{ borderTop: '1px solid #000', paddingTop: 4 }}>Aclaración</div>
+            <div style={{ minHeight: 56, borderBottom: '1px solid #000', marginBottom: 6 }} />
+            <div>Aclaración</div>
           </div>
           <div>
-            <div style={{ borderTop: '1px solid #000', paddingTop: 4 }}>Lugar y fecha</div>
+            <div style={{ minHeight: 56, borderBottom: '1px solid #000', marginBottom: 6 }} />
+            <div>Lugar y fecha</div>
           </div>
         </div>
       </div>
@@ -626,6 +629,7 @@ export default function PrintView({ exam }: Props) {
       {/* ─── PAGE 7: Adjuntos ─── */}
       {attachments.length > 0 && (
         <div className="pv-page" style={{ ...pageStyle, pageBreakAfter: 'auto' }}>
+          <PageHeader />
           <H2>Estudios y Adjuntos</H2>
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '9.5pt' }}>
             <thead>

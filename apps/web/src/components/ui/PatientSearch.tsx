@@ -1,55 +1,76 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, X } from 'lucide-react';
-import { patients, type Patient } from '@/data/mock/patients';
 
-interface PatientSearchProps {
-  placeholder?: string;
-  onSelect: (patient: Patient) => void;
+export interface BasePatientResult {
+  id: string;
+  firstName: string;
+  lastName: string;
+  documentId: string;
+  nationalIdType?: string;
+  source?: 'preoccupational' | 'patients';
+}
+
+interface PatientSearchProps<T extends BasePatientResult> {
+  searchFn: (q: string) => Promise<T[]>;
+  onSelect: (result: T) => void;
   onClear?: () => void;
   selectedName?: string;
+  placeholder?: string;
 }
 
-function searchPatients(query: string): Patient[] {
-  if (!query.trim()) return [];
-  const q = query.toLowerCase();
-  return patients.filter(
-    (p) =>
-      p.firstName.toLowerCase().includes(q) ||
-      p.lastName.toLowerCase().includes(q) ||
-      p.documentId.includes(q)
-  );
-}
+const SOURCE_BADGE: Record<string, string> = {
+  preoccupational: 'badge-glacier',
+  patients: 'badge-moss',
+};
+const SOURCE_LABEL: Record<string, string> = {
+  preoccupational: 'Preocupacional',
+  patients: 'Pacientes',
+};
 
-export default function PatientSearch({ placeholder, onSelect, onClear, selectedName }: PatientSearchProps) {
+export default function PatientSearch<T extends BasePatientResult>({
+  searchFn,
+  onSelect,
+  onClear,
+  selectedName,
+  placeholder,
+}: PatientSearchProps<T>) {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<Patient[]>([]);
+  const [results, setResults] = useState<T[]>([]);
   const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
-    timerRef.current = setTimeout(() => {
-      setResults(searchPatients(query));
-      setOpen(query.trim().length > 0);
-    }, 300);
+    if (!query.trim()) { setResults([]); setOpen(false); return; }
+    timerRef.current = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const data = await searchFn(query);
+        setResults(data);
+        setOpen(true);
+      } catch {
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    }, 350);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [query]);
+  }, [query, searchFn]);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
-      if (containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpen(false);
-      }
+      if (containerRef.current && !containerRef.current.contains(e.target as Node)) setOpen(false);
     }
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleSelect = (patient: Patient) => {
+  const handleSelect = (result: T) => {
     setQuery('');
     setOpen(false);
-    onSelect(patient);
+    onSelect(result);
   };
 
   const handleClear = () => {
@@ -90,25 +111,32 @@ export default function PatientSearch({ placeholder, onSelect, onClear, selected
 
       {open && (
         <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-surface border border-border rounded shadow-card-md overflow-hidden">
-          {results.length === 0 ? (
+          {loading ? (
+            <div className="px-3 py-2 text-xs font-mono text-muted">Buscando...</div>
+          ) : results.length === 0 ? (
             <div className="px-3 py-2 text-xs font-mono text-muted">Sin resultados</div>
           ) : (
             <ul>
-              {results.map((patient) => (
-                <li key={patient.id}>
+              {results.map((result) => (
+                <li key={`${result.source}-${result.id}`}>
                   <button
                     type="button"
-                    onClick={() => handleSelect(patient)}
+                    onClick={() => handleSelect(result)}
                     className="w-full flex items-center gap-3 px-3 py-2 hover:bg-surface-2 transition-colors text-left"
                   >
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-mono text-text truncate">
-                        {patient.firstName} {patient.lastName}
+                        {result.firstName} {result.lastName}
                       </p>
                       <p className="text-xs text-muted">
-                        {patient.nationalIdType} {patient.documentId}
+                        {result.nationalIdType ?? 'DNI'} {result.documentId}
                       </p>
                     </div>
+                    {result.source && (
+                      <span className={`text-2xs shrink-0 ${SOURCE_BADGE[result.source] ?? 'badge-muted'}`}>
+                        {SOURCE_LABEL[result.source] ?? result.source}
+                      </span>
+                    )}
                   </button>
                 </li>
               ))}

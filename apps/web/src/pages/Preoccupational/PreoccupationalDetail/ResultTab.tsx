@@ -81,24 +81,24 @@ function PreexistingConditions({ exam, t }: { exam: PreoccupationalExam; t: (k: 
     ...(familyHistory.diabetes ? ['Diabetes'] : []),
     ...(familyHistory.neurological ? [t('preoccupational.declaration.neurological')] : []),
     ...(familyHistory.neoplastic ? [t('preoccupational.declaration.neoplastic')] : []),
-    ...(familyHistory.other.trim() ? [familyHistory.other.trim()] : []),
+    ...(familyHistory.other?.trim() ? [familyHistory.other.trim()] : []),
   ];
 
   const personal: string[] = [
-    ...(personalAntecedents.clinicalSurgicalPathology.trim() && personalAntecedents.clinicalSurgicalPathology.trim().toLowerCase() !== 'no'
+    ...(personalAntecedents.clinicalSurgicalPathology?.trim() && personalAntecedents.clinicalSurgicalPathology.trim().toLowerCase() !== 'no'
       ? [personalAntecedents.clinicalSurgicalPathology.trim()] : []),
     ...(personalAntecedents.permanentMedication
-      ? [personalAntecedents.permanentMedicationDetail.trim()
+      ? [personalAntecedents.permanentMedicationDetail?.trim()
           ? `Medicación permanente: ${personalAntecedents.permanentMedicationDetail.trim()}`
           : 'Medicación permanente']
       : []),
     ...(personalAntecedents.allergic
-      ? [personalAntecedents.allergicType.trim()
+      ? [personalAntecedents.allergicType?.trim()
           ? `Alérgico: ${personalAntecedents.allergicType.trim()}`
           : 'Alérgico']
       : []),
-    ...(personalAntecedents.professionalDiseases.trim() ? [personalAntecedents.professionalDiseases.trim()] : []),
-    ...(personalAntecedents.laborIncapacity.trim() ? [`Incapacidad laboral: ${personalAntecedents.laborIncapacity.trim()}`] : []),
+    ...(personalAntecedents.professionalDiseases?.trim() ? [personalAntecedents.professionalDiseases.trim()] : []),
+    ...(personalAntecedents.laborIncapacity?.trim() ? [`Incapacidad laboral: ${personalAntecedents.laborIncapacity.trim()}`] : []),
   ];
 
   const respiratory: string[] = [
@@ -144,7 +144,7 @@ export default function ResultTab({ exam, onChange }: Props) {
     onChange({ result: { ...result, ...patch } });
 
   const toggleFinal = (key: FinalExamKey, which: FinalExamResult) => {
-    const current = xrayExam.finalExam[key];
+    const current = xrayExam.finalExam && xrayExam.finalExam[key];
     const next: FinalExamResult = current === which ? null : which;
     onChange({ xrayExam: { ...xrayExam, finalExam: { ...xrayExam.finalExam, [key]: next } } });
   };
@@ -205,7 +205,7 @@ export default function ResultTab({ exam, onChange }: Props) {
                 </span>
               </div>
               {col.map((key) => {
-                const val = xrayExam.finalExam[key];
+                const val = xrayExam.finalExam && xrayExam.finalExam[key];
                 return (
                   <div
                     key={key}
@@ -313,7 +313,7 @@ export default function ResultTab({ exam, onChange }: Props) {
             <label key={field} className="flex items-center gap-2 cursor-pointer py-0.5">
               <input
                 type="checkbox"
-                checked={result[field]}
+                checked={result && result[field]}
                 onChange={(e) => patchResult({ [field]: e.target.checked })}
                 className="accent-ember"
               />
