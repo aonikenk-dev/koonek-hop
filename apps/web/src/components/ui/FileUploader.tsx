@@ -1,7 +1,6 @@
 import { useRef, useState } from 'react';
 import { Upload, FileText, Eye, X, Loader2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import { apiFetch } from '@/services/api';
 import type { AttachmentFile } from '@/data/mock/preoccupational';
 
 interface Props {

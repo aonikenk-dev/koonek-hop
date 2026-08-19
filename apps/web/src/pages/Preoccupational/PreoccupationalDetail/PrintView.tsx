@@ -15,6 +15,7 @@ const CONDITION_KEYS: (keyof MedicalConditions)[] = [
   'kneePain', 'backPain', 'shoulderPain', 'varicoseVeins',
 ];
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const CONDITION_LABELS: Record<keyof MedicalConditions, string> = {
   dizziness: 'Vértigos / mareos', excessiveNervousness: 'Nerviosismo excesivo',
   convulsions: 'Convulsiones', headaches: 'Cefaleas frecuentes', insomnia: 'Insomnio',
@@ -162,12 +163,7 @@ function YNTable({ rows }: { rows: { label: string; value: boolean; indent?: boo
 
 export default function PrintView({ exam }: Props) {
   const { patient, result, xrayExam, clinicalExam, spirometry, declaration, habitsDeclaration,
-    familyHistory, medicalHistory, personalAntecedents, attachments } = exam;
-
-  const colSize = Math.ceil(CONDITION_KEYS.length / 3);
-  const conditionCols = Array.from({ length: 3 }, (_, i) =>
-    CONDITION_KEYS.slice(i * colSize, (i + 1) * colSize)
-  );
+    familyHistory, personalAntecedents, attachments } = exam;
 
   const pageStyle: React.CSSProperties = {
     padding: '18mm 20mm',
