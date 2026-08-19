@@ -1,42 +1,7 @@
-import type { PreoccupationalExam, MedicalConditions, XrayExam } from '@/data/mock/preoccupational';
+import type { PreoccupationalExam, XrayExam } from '@/data/mock/preoccupational';
 import { organization } from '../../../data/config/organization';
 
 interface Props { exam: PreoccupationalExam }
-
-const CONDITION_KEYS: (keyof MedicalConditions)[] = [
-  'dizziness', 'excessiveNervousness', 'convulsions', 'headaches', 'insomnia', 'memoryLoss',
-  'neuritis', 'brucellosis', 'depression', 'malaria', 'rheumaticFever', 'venerealDiseases',
-  'tuberculosis', 'cancer', 'asthma', 'urticaria', 'skinDiseases', 'visionDisorders',
-  'hearingLoss', 'earDischarge', 'frequentColds', 'badTeeth', 'recurrentAngina',
-  'chronicCough', 'sinusitis', 'bloodInSputum', 'nightSweats', 'weightLoss',
-  'chestPain', 'shortnessOfBreath', 'heartPalpitations', 'highBloodPressure',
-  'gastricUlcer', 'acidity', 'frequentIndigestion', 'jaundice', 'hernias', 'hemorrhoids',
-  'painfulJoints', 'urinationDifficulties', 'fracturesOrDislocations', 'flatFeet',
-  'kneePain', 'backPain', 'shoulderPain', 'varicoseVeins',
-];
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const CONDITION_LABELS: Record<keyof MedicalConditions, string> = {
-  dizziness: 'Vértigos / mareos', excessiveNervousness: 'Nerviosismo excesivo',
-  convulsions: 'Convulsiones', headaches: 'Cefaleas frecuentes', insomnia: 'Insomnio',
-  memoryLoss: 'Pérdida de memoria', neuritis: 'Neuritis', brucellosis: 'Brucelosis',
-  depression: 'Depresión', malaria: 'Paludismo', rheumaticFever: 'Fiebre reumática',
-  venerealDiseases: 'Enf. venéreas', tuberculosis: 'Tuberculosis', cancer: 'Cáncer',
-  asthma: 'Asma', urticaria: 'Urticaria', skinDiseases: 'Enf. de piel',
-  visionDisorders: 'Trastornos de visión', hearingLoss: 'Sordera / hipoacusia',
-  earDischarge: 'Supuración de oído', frequentColds: 'Resfríos frecuentes',
-  badTeeth: 'Dentición en mal estado', recurrentAngina: 'Anginas a repetición',
-  chronicCough: 'Tos crónica', sinusitis: 'Sinusitis', bloodInSputum: 'Sangre en esputo',
-  nightSweats: 'Sudoración nocturna', weightLoss: 'Pérdida de peso',
-  chestPain: 'Dolor de pecho', shortnessOfBreath: 'Disnea / ahogo',
-  heartPalpitations: 'Palpitaciones', highBloodPressure: 'HTA',
-  gastricUlcer: 'Úlcera gástrica', acidity: 'Acidez estomacal',
-  frequentIndigestion: 'Dispepsia frecuente', jaundice: 'Ictericia',
-  hernias: 'Hernias', hemorrhoids: 'Hemorroides', painfulJoints: 'Articulaciones dolorosas',
-  urinationDifficulties: 'Dificultad para orinar', fracturesOrDislocations: 'Fracturas / luxaciones',
-  flatFeet: 'Pie plano', kneePain: 'Gonalgia', backPain: 'Dorsalgia / lumbalgia',
-  shoulderPain: 'Cervicalgia / escápulo-humeral', varicoseVeins: 'Várices',
-};
 
 const EXAM_TYPE_LABEL: Record<string, string> = {
   preoccupational: 'PRE-OCUPACIONAL',
