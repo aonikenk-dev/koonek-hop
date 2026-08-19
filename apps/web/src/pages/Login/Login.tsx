@@ -234,18 +234,6 @@ export default function Login() {
             </Button>
           </form>
 
-          <div className="mt-8 p-4 rounded border border-dashed border-border bg-surface">
-            <p className="text-2xs text-muted uppercase tracking-wide mb-2 font-mono">{t('login.demoHint')}</p>
-            <div className="space-y-1">
-              <p className="text-xs font-mono text-text">
-                <span className="text-muted">{t('login.demoEmailLabel')}</span>admin@koonek.app
-              </p>
-              <p className="text-xs font-mono text-text">
-                <span className="text-muted">{t('login.demoPasswordLabel')}</span>koonek2026
-              </p>
-            </div>
-          </div>
-
           <p className="mt-8 text-center font-mono text-2xs text-muted tracking-wide">
             {t('login.poweredBy')} <span className="text-sienna">aonikenk.dev</span>
           </p>
