@@ -1,20 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Search } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { useWorkspaceTabs } from '@/store/workspaceTabs';
 import type { Patient } from '@/data/mock/patients';
 import {
-  preoccupationalExams,
   type PreoccupationalExam,
   type ExamType,
   type AptitudeResult,
-  emptyPreemploymentPatient,
-  emptyClinicalExam,
-  emptySpirometry,
-  emptyXrayExam,
-  emptyResult,
 } from '@/data/mock/preoccupational';
+import { listExams, createExam } from '@/services/preoccupational';
 import Table from '@/components/ui/Table';
 import Button from '@/components/ui/Button';
 import Modal from '@/components/ui/Modal';
@@ -93,12 +88,18 @@ export default function Preoccupational() {
   const navigate = useNavigate();
   const { openTab } = useWorkspaceTabs();
 
-  const [exams, setExams] = useState<PreoccupationalExam[]>(preoccupationalExams);
+  const [exams, setExams] = useState<PreoccupationalExam[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState<CreateForm>(EMPTY_FORM);
   const [linkedPatient, setLinkedPatient] = useState<Patient | null>(null);
   const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    void listExams().then((data) => { setExams(data); setLoading(false); }).catch(() => setLoading(false));
+  }, []);
 
   const formErrors = {
     company:    submitted && !form.company.trim()    ? t('preoccupational.form.errors.company')    : undefined,
@@ -140,57 +141,40 @@ export default function Preoccupational() {
   const handleSubmit = () => {
     setSubmitted(true);
     if (!form.company.trim() || !form.place.trim() || !form.documentId.trim() || !form.firstName.trim() || !form.lastName.trim()) return;
-    handleCreate();
+    void handleCreate();
   };
 
-  const handleCreate = () => {
-    const id = `preocc-${Date.now()}`;
-    const newExam: PreoccupationalExam = {
-      id,
-      examType: form.examType,
-      date: form.date,
-      company: form.company,
-      place: form.place,
-      status: 'draft',
-      patient: {
-        ...emptyPreemploymentPatient(),
-        id: `pp-${Date.now()}`,
-        firstName: form.firstName,
-        lastName: form.lastName,
-        nationalIdType: form.nationalIdType,
-        documentId: form.documentId,
-        linkedPatientId: linkedPatient?.id,
-        addedToPatients: linkedPatient ? false : form.addToPatients,
-      },
-      position: '',
-      tasks: '',
-      declaration: { leftJobForHealth: false, pendingCompensation: false, exemptedFromMilitary: false, deniedLifeInsurance: false },
-      habitsDeclaration: { smokes: false, drinks: false },
-      familyHistory: { hta: false, diabetes: false, neurological: false, neoplastic: false, other: '' },
-      medicalHistory: { surgeries: '', conditions: {} as any, medicalObservations: '' },
-      personalAntecedents: {
-        clinicalSurgicalPathology: '', permanentMedication: false, permanentMedicationDetail: '',
-        smokerAmount: '', habits: '', allergic: false, allergicType: '',
-        professionalDiseases: '', laborIncapacity: '',
-      },
-      clinicalExam: emptyClinicalExam(),
-      spirometry: emptySpirometry(),
-      xrayExam: emptyXrayExam(),
-      result: emptyResult(),
-      attachments: [],
-    };
-    preoccupationalExams.unshift(newExam);
-    setExams((prev) => [newExam, ...prev]);
-    setShowCreate(false);
-    setForm(EMPTY_FORM);
-    setLinkedPatient(null);
-    openTab({
-      key: `preoccupational:${id}`,
-      kind: 'preoccupational',
-      label: `${form.firstName} ${form.lastName}`,
-      path: `/preoccupational/${id}`,
-    });
-    navigate(`/preoccupational/${id}`);
+  const handleCreate = async () => {
+    setSaving(true);
+    try {
+      const newExam = await createExam({
+        examType: form.examType,
+        date: form.date,
+        company: form.company,
+        place: form.place,
+        patient: {
+          firstName: form.firstName,
+          lastName: form.lastName,
+          nationalIdType: form.nationalIdType,
+          documentId: form.documentId,
+          linkedPatientId: linkedPatient?.id,
+          addToPatients: linkedPatient ? false : form.addToPatients,
+        },
+      });
+      setExams((prev) => [newExam, ...prev]);
+      setShowCreate(false);
+      setForm(EMPTY_FORM);
+      setLinkedPatient(null);
+      openTab({
+        key: `preoccupational:${newExam.id}`,
+        kind: 'preoccupational',
+        label: `${form.firstName} ${form.lastName}`,
+        path: `/preoccupational/${newExam.id}`,
+      });
+      navigate(`/preoccupational/${newExam.id}`);
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleRowClick = (exam: PreoccupationalExam) => {
@@ -265,13 +249,19 @@ export default function Preoccupational() {
         </Button>
       </div>
 
-      <Table
-        rows={filtered}
-        rowKey={(ex) => ex.id}
-        columns={columns}
-        onRowClick={handleRowClick}
-        emptyMessage={t('preoccupational.empty')}
-      />
+      {loading ? (
+        <div className="flex items-center justify-center h-32">
+          <p className="text-sm text-muted font-mono">{t('common.loading')}</p>
+        </div>
+      ) : (
+        <Table
+          rows={filtered}
+          rowKey={(ex) => ex.id}
+          columns={columns}
+          onRowClick={handleRowClick}
+          emptyMessage={t('preoccupational.empty')}
+        />
+      )}
 
       <Modal
         open={showCreate}
@@ -389,8 +379,8 @@ export default function Preoccupational() {
             <Button variant="ghost" onClick={handleClose}>
               {t('common.cancel')}
             </Button>
-            <Button onClick={handleSubmit}>
-              {t('common.save')}
+            <Button onClick={handleSubmit} disabled={saving}>
+              {saving ? '...' : t('common.save')}
             </Button>
           </div>
         </div>

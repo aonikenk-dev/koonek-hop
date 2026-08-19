@@ -12,6 +12,23 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum ExamType {
+  PREOCCUPATIONAL
+  PERIODIC
+  EGRESS
+}
+
+enum ExamStatus {
+  DRAFT
+  COMPLETED
+}
+
+enum NationalIdType {
+  DNI
+  LE
+  OTRO
+}
+
 enum Role {
   ADMIN
   DOCTOR
@@ -35,10 +52,11 @@ model Organization {
   createdAt DateTime           @default(now())
   updatedAt DateTime           @updatedAt
 
-  users       User[]
-  patients    Patient[]
-  doctors     Doctor[]
-  appointments Appointment[]
+  users                User[]
+  patients             Patient[]
+  doctors              Doctor[]
+  appointments         Appointment[]
+  preoccupationalExams PreoccupationalExam[]
 
   @@map("organizations")
 }
@@ -86,7 +104,8 @@ model Patient {
   createdAt      DateTime     @default(now())
   updatedAt      DateTime     @updatedAt
 
-  appointments Appointment[]
+  appointments          Appointment[]
+  preemploymentPatients PreemploymentPatient[]
 
   @@map("patients")
 }
@@ -106,4 +125,69 @@ model Appointment {
   updatedAt      DateTime     @updatedAt
 
   @@map("appointments")
+}
+
+model PreoccupationalExam {
+  id             String       @id @default(uuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+
+  examType ExamType
+  date     DateTime
+  company  String
+  place    String
+  status   ExamStatus @default(DRAFT)
+  position String     @default("")
+  tasks    String     @default("")
+
+  // Complex clinical data — stored as JSON, managed entirely by the application layer
+  declaration         Json @default("{}")
+  habitsDeclaration   Json @default("{}")
+  familyHistory       Json @default("{}")
+  medicalHistory      Json @default("{}")
+  personalAntecedents Json @default("{}")
+  clinicalExam        Json @default("{}")
+  spirometry          Json @default("{}")
+  xrayExam            Json @default("{}")
+  result              Json @default("{}")
+
+  // File metadata (name + url); actual binary storage is handled by external service
+  attachments           Json @default("[]")
+  swornDeclarationFiles Json @default("[]")
+  spirometryFiles       Json @default("[]")
+  xrayFiles             Json @default("[]")
+
+  patient PreemploymentPatient?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("preoccupational_exams")
+}
+
+model PreemploymentPatient {
+  id     String              @id @default(uuid())
+  examId String              @unique
+  exam   PreoccupationalExam @relation(fields: [examId], references: [id], onDelete: Cascade)
+
+  // Populated when "add to patients" is checked on exam creation
+  patientId String?
+  patient   Patient? @relation(fields: [patientId], references: [id])
+
+  firstName        String
+  lastName         String
+  nationalIdType   NationalIdType @default(DNI)
+  documentId       String
+  cuil             String         @default("")
+  dateOfBirth      String         @default("")
+  birthPlace       String         @default("")
+  maritalStatus    String         @default("")
+  numberOfChildren Int            @default(0)
+  address          String         @default("")
+  city             String         @default("")
+  postalCode       String         @default("")
+  state            String         @default("")
+  country          String         @default("Argentina")
+
+  @@map("preemployment_patients")
 }

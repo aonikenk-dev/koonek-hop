@@ -3,7 +3,7 @@ import { ChevronRight } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import { patients } from '@/data/mock/patients';
 import { doctors, doctorLabel } from '@/data/mock/doctors';
-import { preoccupationalExams } from '@/data/mock/preoccupational';
+import { useWorkspaceTabs } from '@/store/workspaceTabs';
 
 const SEGMENT_LABEL_KEY: Record<string, string> = {
   doctors: 'nav.doctors',
@@ -39,6 +39,7 @@ interface Crumb {
 
 export default function Breadcrumbs() {
   const { t } = useApp();
+  const { tabs } = useWorkspaceTabs();
   const location = useLocation();
   const segments = location.pathname.split('/').filter(Boolean);
 
@@ -64,10 +65,8 @@ export default function Breadcrumbs() {
       if (first === 'ai' && SEGMENT_LABEL_KEY[second]) {
         crumbs.push({ label: t(SEGMENT_LABEL_KEY[second]) });
       } else if (first === 'preoccupational') {
-        const exam = preoccupationalExams.find((e) => e.id === second);
-        const label = exam
-          ? `${exam.patient.firstName} ${exam.patient.lastName}`
-          : second;
+        const tab = tabs.find((t) => t.key === `preoccupational:${second}`);
+        const label = tab ? tab.label : second;
         crumbs.push({ label });
       } else if (first === 'doctors') {
         const doctor = doctors.find((d) => d.id === second);

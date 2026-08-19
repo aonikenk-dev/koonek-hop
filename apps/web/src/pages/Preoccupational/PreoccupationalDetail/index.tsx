@@ -1,9 +1,10 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { Save, CheckCircle, Printer, Loader2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import { preoccupationalExams, type PreoccupationalExam, type ExamStatus } from '@/data/mock/preoccupational';
+import type { PreoccupationalExam } from '@/data/mock/preoccupational';
+import { getExam, saveExam, completeExam } from '@/services/preoccupational';
 import Button from '@/components/ui/Button';
 import PrintView from './PrintView';
 import SummaryTab from './SummaryTab';
@@ -22,17 +23,31 @@ export default function PreoccupationalDetail() {
   const { id } = useParams<{ id: string }>();
   const { t } = useApp();
 
-  const found = preoccupationalExams.find((e) => e.id === id);
-  const [exam, setExam] = useState<PreoccupationalExam | null>(found ?? null);
+  const [exam, setExam] = useState<PreoccupationalExam | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('summary');
   const [saved, setSaved] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!id) { setLoadError(true); return; }
+    void getExam(id).then(setExam).catch(() => setLoadError(true));
+  }, [id]);
+
+  if (loadError) {
+    return (
+      <div className="flex items-center justify-center h-48">
+        <p className="text-sm text-muted font-mono">Examen no encontrado.</p>
+      </div>
+    );
+  }
 
   if (!exam) {
     return (
       <div className="flex items-center justify-center h-48">
-        <p className="text-sm text-muted font-mono">Examen no encontrado.</p>
+        <p className="text-sm text-muted font-mono">{t('common.loading')}</p>
       </div>
     );
   }
@@ -42,18 +57,22 @@ export default function PreoccupationalDetail() {
     setSaved(false);
   };
 
-  const handleSave = () => {
-    const idx = preoccupationalExams.findIndex((e) => e.id === exam.id);
-    if (idx !== -1) preoccupationalExams[idx] = exam;
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = async () => {
+    if (isSaving) return;
+    setIsSaving(true);
+    try {
+      const updated = await saveExam(exam.id, exam);
+      setExam(updated);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  const handleComplete = () => {
-    const updated: PreoccupationalExam = { ...exam, status: 'completed' as ExamStatus };
+  const handleComplete = async () => {
+    const updated = await completeExam(exam.id);
     setExam(updated);
-    const idx = preoccupationalExams.findIndex((e) => e.id === exam.id);
-    if (idx !== -1) preoccupationalExams[idx] = updated;
   };
 
   const handlePrint = async () => {
@@ -164,11 +183,11 @@ export default function PreoccupationalDetail() {
           <span className={exam.status === 'completed' ? 'badge-moss' : 'badge-muted'}>
             {t(`preoccupational.status.${exam.status}`)}
           </span>
-          <Button leftIcon={<Save size={14} />} variant="secondary" onClick={handleSave}>
+          <Button leftIcon={isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} variant="secondary" onClick={() => { void handleSave(); }} disabled={isSaving}>
             {saved ? '✓ Guardado' : t('common.save')}
           </Button>
           {exam.status === 'draft' && (
-            <Button leftIcon={<CheckCircle size={14} />} onClick={handleComplete}>
+            <Button leftIcon={<CheckCircle size={14} />} onClick={() => { void handleComplete(); }}>
               {t('preoccupational.markComplete')}
             </Button>
           )}

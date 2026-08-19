@@ -1,0 +1,107 @@
+import { apiFetch } from './api';
+import type { PreoccupationalExam, AttachmentFile } from '@/data/mock/preoccupational';
+
+interface ListResponse {
+  data: PreoccupationalExam[];
+  pagination: { total: number; page: number; limit: number };
+}
+
+/** Strip blob: URLs from file arrays before sending to the server — they are session-only. */
+function sanitizeFiles(files: AttachmentFile[] | undefined): Array<{ id: string; name: string; url: string }> {
+  if (!files) return [];
+  return files
+    .filter((f) => !f.url.startsWith('blob:'))
+    .map(({ id, name, url }) => ({ id, name, url }));
+}
+
+export async function listExams(params?: { search?: string; status?: string }): Promise<PreoccupationalExam[]> {
+  const qs = new URLSearchParams();
+  if (params?.search) qs.set('search', params.search);
+  if (params?.status) qs.set('status', params.status);
+  const query = qs.toString() ? `?${qs}` : '';
+  const res = await apiFetch<ListResponse>(`/api/preoccupational${query}`);
+  return res.data;
+}
+
+export async function getExam(id: string): Promise<PreoccupationalExam> {
+  return apiFetch<PreoccupationalExam>(`/api/preoccupational/${id}`);
+}
+
+export interface CreateExamPayload {
+  examType: PreoccupationalExam['examType'];
+  date: string;
+  company: string;
+  place: string;
+  patient: {
+    firstName: string;
+    lastName: string;
+    nationalIdType: 'DNI' | 'LE' | 'OTRO';
+    documentId: string;
+    linkedPatientId?: string;
+    addToPatients: boolean;
+  };
+}
+
+export async function createExam(payload: CreateExamPayload): Promise<PreoccupationalExam> {
+  return apiFetch<PreoccupationalExam>('/api/preoccupational', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function saveExam(id: string, exam: PreoccupationalExam): Promise<PreoccupationalExam> {
+  const { patient, examType, date, status, ...rest } = exam;
+  const body = {
+    examType,
+    date,
+    status,
+    company: rest.company,
+    place: rest.place,
+    position: rest.position,
+    tasks: rest.tasks,
+    declaration: rest.declaration,
+    habitsDeclaration: rest.habitsDeclaration,
+    familyHistory: rest.familyHistory,
+    medicalHistory: rest.medicalHistory,
+    personalAntecedents: rest.personalAntecedents,
+    clinicalExam: rest.clinicalExam,
+    spirometry: rest.spirometry,
+    xrayExam: rest.xrayExam,
+    result: rest.result,
+    attachments: rest.attachments,
+    swornDeclarationFiles: sanitizeFiles(rest.swornDeclarationFiles),
+    spirometryFiles: sanitizeFiles(rest.spirometryFiles),
+    xrayFiles: sanitizeFiles(rest.xrayFiles),
+    patient: {
+      firstName: patient.firstName,
+      lastName: patient.lastName,
+      nationalIdType: patient.nationalIdType,
+      documentId: patient.documentId,
+      cuil: patient.cuil,
+      dateOfBirth: patient.dateOfBirth,
+      birthPlace: patient.birthPlace,
+      maritalStatus: patient.maritalStatus,
+      numberOfChildren: patient.numberOfChildren,
+      address: patient.address,
+      city: patient.city,
+      postalCode: patient.postalCode,
+      state: patient.state,
+      country: patient.country,
+    },
+  };
+  return apiFetch<PreoccupationalExam>(`/api/preoccupational/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(body),
+  });
+}
+
+export async function completeExam(id: string): Promise<PreoccupationalExam> {
+  return apiFetch<PreoccupationalExam>(`/api/preoccupational/${id}/status`, {
+    method: 'PATCH',
+    body: JSON.stringify({ status: 'completed' }),
+  });
+}
+
+export async function deleteExam(id: string): Promise<void> {
+  await apiFetch(`/api/preoccupational/${id}`, { method: 'DELETE' });
+}

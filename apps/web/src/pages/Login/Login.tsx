@@ -61,8 +61,7 @@ export default function Login() {
     e.preventDefault();
     setError('');
     setLoading(true);
-    await new Promise((r) => setTimeout(r, 500));
-    const result = login(email, password);
+    const result = await login(email, password);
     setLoading(false);
     if (result.ok) {
       navigate('/dashboard', { replace: true });

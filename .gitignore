@@ -6,3 +6,4 @@ build/
 *.tsbuildinfo
 .DS_Store
 coverage/
+.vscode/settings.json
