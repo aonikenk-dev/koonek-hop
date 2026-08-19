@@ -10,19 +10,33 @@ function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   );
 }
 
+const APTITUDE_CLASS: Partial<Record<NonNullable<AptitudeResult>, string>> = {
+  apt: 'badge-moss',
+  aptWithPreexistence: 'badge-ember',
+  transitoryInapt: 'badge-ember',
+  inapt: 'badge-sienna',
+  continuesApt: 'badge-moss',
+  continuesAptWithRestrictions: 'badge-ember',
+  requiresPeriodicControl: 'badge-ember',
+  requiresSpecialistConsultation: 'badge-ember',
+};
+
+const APTITUDE_LABEL: Partial<Record<NonNullable<AptitudeResult>, string>> = {
+  apt: 'Apto',
+  aptWithPreexistence: 'Apto c/ preexistencia',
+  transitoryInapt: 'No apto transitorio',
+  inapt: 'No apto',
+  continuesApt: 'Apto',
+  continuesAptWithRestrictions: 'Apto c/ restricciones',
+  requiresPeriodicControl: 'Control periódico',
+  requiresSpecialistConsultation: 'Interconsulta',
+};
+
 function AptitudeBadge({ aptitude }: { aptitude: AptitudeResult }) {
   if (!aptitude) return <span className="badge-muted">—</span>;
-  const map: Record<string, string> = {
-    apt: 'badge-moss',
-    aptWithRestrictions: 'badge-ember',
-    inapt: 'badge-sienna',
-  };
-  const labelMap: Record<string, string> = {
-    apt: 'Apto',
-    aptWithRestrictions: 'Apto c/ restricciones',
-    inapt: 'No apto',
-  };
-  return <span className={`${map[aptitude]} text-sm px-3 py-1`}>{labelMap[aptitude]}</span>;
+  const cls = APTITUDE_CLASS[aptitude] ?? 'badge-muted';
+  const label = APTITUDE_LABEL[aptitude] ?? aptitude;
+  return <span className={`${cls} text-sm px-3 py-1`}>{label}</span>;
 }
 
 interface Props {

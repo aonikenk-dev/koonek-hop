@@ -1,5 +1,16 @@
 export type ExamType = 'preoccupational' | 'periodic' | 'egress';
-export type AptitudeResult = 'apt' | 'aptWithRestrictions' | 'inapt' | null;
+export type AptitudeResult =
+  // preoccupational / egress
+  | 'apt'
+  | 'aptWithPreexistence'
+  | 'transitoryInapt'
+  | 'inapt'
+  // periodic
+  | 'continuesApt'
+  | 'continuesAptWithRestrictions'
+  | 'requiresPeriodicControl'
+  | 'requiresSpecialistConsultation'
+  | null;
 export type ExamStatus = 'draft' | 'completed';
 
 export interface PreemploymentPatient {
@@ -226,6 +237,7 @@ export interface ExamResult {
   preventionMeasures: boolean;
   treatment: boolean;
   aptitude: AptitudeResult;
+  aptitudeDetail: string;
 }
 
 export interface PreoccupationalExam {
@@ -276,6 +288,9 @@ export interface PreoccupationalExam {
   xrayExam: XrayExam;
   result: ExamResult;
   attachments: PreoccupationalAttachment[];
+  swornDeclarationFiles?: AttachmentFile[];
+  spirometryFiles?: AttachmentFile[];
+  xrayFiles?: AttachmentFile[];
 }
 
 export function emptyPreemploymentPatient(): PreemploymentPatient {
@@ -354,7 +369,7 @@ export function emptyResult(): ExamResult {
     normal: false, inculpableDiseases: false, abnormal: false,
     outOfRangeValues: false, preclinicalAlterations: false, professionalDiseases: false,
     comments: '', conductExpectantControl: false, suspendExposureControl: false,
-    preventionMeasures: false, treatment: false, aptitude: null,
+    preventionMeasures: false, treatment: false, aptitude: null, aptitudeDetail: '',
   };
 }
 
@@ -452,6 +467,7 @@ export const preoccupationalExams: PreoccupationalExam[] = [
       preventionMeasures: false,
       treatment: false,
       aptitude: 'inapt',
+      aptitudeDetail: '',
     },
     attachments: [
       { id: 'att1', description: 'Prueba Función Pulmonar', category: 'spirometry', uploadedAt: '2020-11-05', files: [] },
@@ -545,6 +561,7 @@ export const preoccupationalExams: PreoccupationalExam[] = [
       preventionMeasures: false,
       treatment: false,
       aptitude: 'apt',
+      aptitudeDetail: '',
     },
     attachments: [
       { id: 'att9', description: 'Laboratorio general', category: 'lab', uploadedAt: '2024-03-15', files: [] },

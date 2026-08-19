@@ -1,6 +1,7 @@
 import type { PreoccupationalExam, SpirometryAntecedents } from '@/data/mock/preoccupational';
 import { useApp } from '@/contexts/AppContext';
 import Input from '@/components/ui/Input';
+import FileUploader from '@/components/ui/FileUploader';
 
 interface Props {
   exam: PreoccupationalExam;
@@ -96,6 +97,14 @@ export default function SpirometryTab({ exam, onChange }: Props) {
           <Input label={t('preoccupational.spirometry.smokingAmount')} value={sp.smokingAmount} onChange={(e) => setSP({ smokingAmount: e.target.value })} />
           <Input label={t('preoccupational.spirometry.smokingStartAge')} value={sp.smokingStartAge} onChange={(e) => setSP({ smokingStartAge: e.target.value })} />
         </div>
+      </section>
+
+      <section className="bg-surface border border-border rounded-md p-4">
+        <SectionTitle>{t('preoccupational.spirometry.files')}</SectionTitle>
+        <FileUploader
+          files={exam.spirometryFiles ?? []}
+          onChange={(files) => onChange({ spirometryFiles: files })}
+        />
       </section>
     </div>
   );

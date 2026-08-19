@@ -1,5 +1,6 @@
 import type { PreoccupationalExam, XrayExam } from '@/data/mock/preoccupational';
 import { useApp } from '@/contexts/AppContext';
+import FileUploader from '@/components/ui/FileUploader';
 
 interface Props {
   exam: PreoccupationalExam;
@@ -47,6 +48,14 @@ export default function XrayTab({ exam, onChange }: Props) {
             </div>
           ))}
         </div>
+      </section>
+
+      <section className="bg-surface border border-border rounded-md p-4">
+        <SectionTitle>{t('preoccupational.xray.files')}</SectionTitle>
+        <FileUploader
+          files={exam.xrayFiles ?? []}
+          onChange={(files) => onChange({ xrayFiles: files })}
+        />
       </section>
     </div>
   );

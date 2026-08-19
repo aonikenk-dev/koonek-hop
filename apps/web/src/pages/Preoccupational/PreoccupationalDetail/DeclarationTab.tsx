@@ -1,6 +1,7 @@
-import type { PreoccupationalExam, MedicalConditions } from '@/data/mock/preoccupational';
+import type { PreoccupationalExam } from '@/data/mock/preoccupational';
 import { useApp } from '@/contexts/AppContext';
 import Input from '@/components/ui/Input';
+import FileUploader from '@/components/ui/FileUploader';
 
 interface Props {
   exam: PreoccupationalExam;
@@ -37,36 +38,8 @@ function CheckField({
   );
 }
 
-const CONDITION_KEYS: (keyof MedicalConditions)[] = [
-  'dizziness', 'excessiveNervousness', 'convulsions', 'headaches', 'insomnia', 'memoryLoss',
-  'neuritis', 'brucellosis', 'depression', 'malaria', 'rheumaticFever', 'venerealDiseases',
-  'tuberculosis', 'cancer', 'asthma', 'urticaria', 'skinDiseases', 'visionDisorders',
-  'hearingLoss', 'earDischarge', 'frequentColds', 'badTeeth', 'recurrentAngina',
-  'chronicCough', 'sinusitis', 'bloodInSputum', 'nightSweats', 'weightLoss',
-  'chestPain', 'shortnessOfBreath', 'heartPalpitations', 'highBloodPressure',
-  'gastricUlcer', 'acidity', 'frequentIndigestion', 'jaundice', 'hernias', 'hemorrhoids',
-  'painfulJoints', 'urinationDifficulties', 'fracturesOrDislocations', 'flatFeet',
-  'kneePain', 'backPain', 'shoulderPain', 'varicoseVeins',
-];
-
-const COLS = 3;
-
 export default function DeclarationTab({ exam, onChange }: Props) {
   const { t } = useApp();
-
-  const setCondition = (key: keyof MedicalConditions, value: boolean) => {
-    onChange({
-      medicalHistory: {
-        ...exam.medicalHistory,
-        conditions: { ...exam.medicalHistory.conditions, [key]: value },
-      },
-    });
-  };
-
-  const colSize = Math.ceil(CONDITION_KEYS.length / COLS);
-  const cols: (keyof MedicalConditions)[][] = Array.from({ length: COLS }, (_, i) =>
-    CONDITION_KEYS.slice(i * colSize, (i + 1) * colSize)
-  );
 
   return (
     <div className="space-y-6">
@@ -215,58 +188,14 @@ export default function DeclarationTab({ exam, onChange }: Props) {
         />
       </section>
 
-      {/* Antecedentes Médicos */}
-      <section className="bg-surface border border-border rounded-md p-4">
-        <SectionTitle>{t('preoccupational.declaration.medicalHistory')}</SectionTitle>
-        <div className="grid grid-cols-3 gap-x-6">
-          {cols.map((col, ci) => (
-            <div key={ci} className="space-y-0.5">
-              {col.map((key) => (
-                <CheckField
-                  key={key}
-                  label={t(`preoccupational.declaration.conditions.${key}`)}
-                  checked={exam.medicalHistory.conditions[key] ?? false}
-                  onChange={(v) => setCondition(key, v)}
-                />
-              ))}
-            </div>
-          ))}
-        </div>
-        <div className="mt-4 grid grid-cols-2 gap-3">
-          <Input
-            label={t('preoccupational.declaration.surgeries')}
-            value={exam.medicalHistory.surgeries}
-            onChange={(e) =>
-              onChange({ medicalHistory: { ...exam.medicalHistory, surgeries: e.target.value } })
-            }
-          />
-          <Input
-            label={t('preoccupational.declaration.medicalObservations')}
-            value={exam.medicalHistory.medicalObservations}
-            onChange={(e) =>
-              onChange({
-                medicalHistory: { ...exam.medicalHistory, medicalObservations: e.target.value },
-              })
-            }
-          />
-        </div>
-      </section>
-
-      {/* Declaración Jurada */}
+      {/* Declaración Jurada — file uploader */}
       <section className="bg-surface border border-border rounded-md p-4">
         <SectionTitle>{t('preoccupational.declaration.declarationJurada')}</SectionTitle>
-        <div className="space-y-2">
-          {(
-            ['leftJobForHealth', 'pendingCompensation', 'exemptedFromMilitary', 'deniedLifeInsurance'] as const
-          ).map((key) => (
-            <CheckField
-              key={key}
-              label={t(`preoccupational.declaration.${key}`)}
-              checked={exam.declaration[key]}
-              onChange={(v) => onChange({ declaration: { ...exam.declaration, [key]: v } })}
-            />
-          ))}
-        </div>
+
+        <FileUploader
+          files={exam.swornDeclarationFiles ?? []}
+          onChange={(files) => onChange({ swornDeclarationFiles: files })}
+        />
       </section>
     </div>
   );

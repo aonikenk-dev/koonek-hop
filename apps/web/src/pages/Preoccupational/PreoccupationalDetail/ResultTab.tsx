@@ -14,6 +14,12 @@ const FINAL_EXAM_COLS: FinalExamKey[][] = [
   ['espirometria', 'laringoscopia', 'rxTx', 'rxCLS', 'rxMunecas', 'ecg', 'laboratorioInespecifico', 'laboratorioToxicologico'],
 ];
 
+// Options that require a detail text input
+const NEEDS_DETAIL: AptitudeResult[] = [
+  'aptWithPreexistence', 'transitoryInapt', 'inapt',
+  'continuesAptWithRestrictions', 'requiresPeriodicControl', 'requiresSpecialistConsultation',
+];
+
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
     <h3 className="text-2xs text-muted tracking-widest uppercase font-mono mb-3 pb-1 border-b border-border">
@@ -39,6 +45,94 @@ function SubCheck({ label, checked, disabled, onChange }: {
       />
       <span className="text-sm font-mono text-text">{label}</span>
     </label>
+  );
+}
+
+function InfoChip({ children }: { children: React.ReactNode }) {
+  return (
+    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-ember/10 text-ember border border-ember/20">
+      {children}
+    </span>
+  );
+}
+
+function PreexistingGroup({ title, items }: { title: string; items: string[] }) {
+  if (items.length === 0) return null;
+  return (
+    <div className="space-y-1.5">
+      <p className="text-2xs font-mono text-muted uppercase tracking-widest">{title}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {items.map((item) => <InfoChip key={item}>{item}</InfoChip>)}
+      </div>
+    </div>
+  );
+}
+
+function PreexistingConditions({ exam, t }: { exam: PreoccupationalExam; t: (k: string) => string }) {
+  const { habitsDeclaration, familyHistory, personalAntecedents, spirometry } = exam;
+
+  const habits: string[] = [
+    ...(habitsDeclaration.smokes ? [t('preoccupational.declaration.smokes')] : []),
+    ...(habitsDeclaration.drinks ? [t('preoccupational.declaration.drinks')] : []),
+  ];
+
+  const family: string[] = [
+    ...(familyHistory.hta ? ['HTA'] : []),
+    ...(familyHistory.diabetes ? ['Diabetes'] : []),
+    ...(familyHistory.neurological ? [t('preoccupational.declaration.neurological')] : []),
+    ...(familyHistory.neoplastic ? [t('preoccupational.declaration.neoplastic')] : []),
+    ...(familyHistory.other.trim() ? [familyHistory.other.trim()] : []),
+  ];
+
+  const personal: string[] = [
+    ...(personalAntecedents.clinicalSurgicalPathology.trim() && personalAntecedents.clinicalSurgicalPathology.trim().toLowerCase() !== 'no'
+      ? [personalAntecedents.clinicalSurgicalPathology.trim()] : []),
+    ...(personalAntecedents.permanentMedication
+      ? [personalAntecedents.permanentMedicationDetail.trim()
+          ? `Medicación permanente: ${personalAntecedents.permanentMedicationDetail.trim()}`
+          : 'Medicación permanente']
+      : []),
+    ...(personalAntecedents.allergic
+      ? [personalAntecedents.allergicType.trim()
+          ? `Alérgico: ${personalAntecedents.allergicType.trim()}`
+          : 'Alérgico']
+      : []),
+    ...(personalAntecedents.professionalDiseases.trim() ? [personalAntecedents.professionalDiseases.trim()] : []),
+    ...(personalAntecedents.laborIncapacity.trim() ? [`Incapacidad laboral: ${personalAntecedents.laborIncapacity.trim()}`] : []),
+  ];
+
+  const respiratory: string[] = [
+    ...(spirometry.frequentColds ? ['Resfríos frecuentes'] : []),
+    ...(spirometry.sinusitis ? ['Sinusitis'] : []),
+    ...(spirometry.prolongedBronchitis ? ['Bronquitis prolongada'] : []),
+    ...(spirometry.asthma ? ['Asma'] : []),
+    ...(spirometry.pneumonia ? ['Neumonía'] : []),
+    ...(spirometry.tbc ? ['TBC'] : []),
+    ...(spirometry.pleurisy ? ['Pleuritis'] : []),
+    ...(spirometry.pneumothorax ? ['Neumotórax'] : []),
+    ...(spirometry.kyphosis ? ['Cifosis'] : []),
+    ...(spirometry.scoliosis ? ['Escoliosis'] : []),
+    ...(spirometry.arterialHypertension ? ['HTA'] : []),
+    ...(spirometry.valvulopathy ? ['Valvulopatía'] : []),
+    ...(spirometry.coronaryDisease ? ['Enfermedad coronaria'] : []),
+    ...(spirometry.currentDyspnea ? ['Disnea'] : []),
+    ...(spirometry.currentCough ? ['Tos actual'] : []),
+    ...(spirometry.currentThoracicPain ? ['Dolor torácico'] : []),
+  ];
+
+  const hasAny = habits.length + family.length + personal.length + respiratory.length > 0;
+
+  if (!hasAny) {
+    return <p className="text-sm font-mono text-muted">{t('preoccupational.attachments.preexistingEmpty')}</p>;
+  }
+
+  return (
+    <div className="space-y-4">
+      <PreexistingGroup title={t('preoccupational.attachments.preexistingHabits')} items={habits} />
+      <PreexistingGroup title={t('preoccupational.attachments.preexistingFamily')} items={family} />
+      <PreexistingGroup title={t('preoccupational.attachments.preexistingPersonal')} items={personal} />
+      <PreexistingGroup title={t('preoccupational.attachments.preexistingRespiratory')} items={respiratory} />
+    </div>
   );
 }
 
@@ -72,6 +166,26 @@ export default function ResultTab({ exam, onChange }: Props) {
       });
     }
   };
+
+  const selectAptitude = (value: AptitudeResult) => {
+    patchResult({ aptitude: value, aptitudeDetail: '' });
+  };
+
+  const preoccupationalOptions: { value: AptitudeResult; color: string }[] = [
+    { value: 'apt',               color: 'text-moss' },
+    { value: 'aptWithPreexistence', color: 'text-ember' },
+    { value: 'transitoryInapt',   color: 'text-ember' },
+    { value: 'inapt',             color: 'text-sienna' },
+  ];
+
+  const periodicOptions: { value: AptitudeResult; color: string }[] = [
+    { value: 'continuesApt',                   color: 'text-moss' },
+    { value: 'continuesAptWithRestrictions',    color: 'text-ember' },
+    { value: 'requiresPeriodicControl',         color: 'text-ember' },
+    { value: 'requiresSpecialistConsultation',  color: 'text-ember' },
+  ];
+
+  const aptitudeOptions = exam.examType === 'periodic' ? periodicOptions : preoccupationalOptions;
 
   return (
     <div className="space-y-5">
@@ -133,7 +247,6 @@ export default function ResultTab({ exam, onChange }: Props) {
         </p>
 
         <div className="space-y-1">
-          {/* Normal */}
           <label className="flex items-center gap-2 py-1 cursor-pointer">
             <input
               type="checkbox"
@@ -144,7 +257,6 @@ export default function ResultTab({ exam, onChange }: Props) {
             <span className="text-sm font-mono text-text font-medium">{t('preoccupational.result.normalResult')}</span>
           </label>
 
-          {/* Enfermedades Inculpables */}
           <label className="flex items-center gap-2 py-1 cursor-pointer">
             <input
               type="checkbox"
@@ -155,7 +267,6 @@ export default function ResultTab({ exam, onChange }: Props) {
             <span className="text-sm font-mono text-text font-medium">{t('preoccupational.result.inculpableDiseases')}</span>
           </label>
 
-          {/* Anormal + nested */}
           <div>
             <label className="flex items-center gap-2 py-1 cursor-pointer">
               <input
@@ -188,17 +299,6 @@ export default function ResultTab({ exam, onChange }: Props) {
         </div>
       </section>
 
-      {/* Comentarios */}
-      <section className="bg-surface border border-border rounded-md p-4">
-        <SectionTitle>{t('preoccupational.result.comments')}</SectionTitle>
-        <textarea
-          value={result.comments}
-          onChange={(e) => patchResult({ comments: e.target.value })}
-          rows={4}
-          className="w-full px-3 py-2.5 bg-surface border border-border rounded text-sm font-mono text-text outline-none focus:border-moss focus:ring-1 focus:ring-moss/20 transition-colors resize-none"
-        />
-      </section>
-
       {/* Conclusión */}
       <section className="bg-surface border border-border rounded-md p-4">
         <SectionTitle>{t('preoccupational.result.conclusion')}</SectionTitle>
@@ -222,25 +322,58 @@ export default function ResultTab({ exam, onChange }: Props) {
           ))}
         </div>
 
-        <p className="text-2xs font-mono text-muted uppercase tracking-wide mb-2">
+        <p className="text-2xs font-mono text-muted uppercase tracking-wide mb-3">
           {t('preoccupational.result.aptitude')}
         </p>
-        <div className="flex gap-6">
-          {(['apt', 'aptWithRestrictions', 'inapt'] as AptitudeResult[]).map((opt) => (
-            <label key={opt!} className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="aptitude"
-                checked={result.aptitude === opt}
-                onChange={() => patchResult({ aptitude: opt })}
-                className="accent-ember"
-              />
-              <span className={`text-sm font-mono ${opt === 'apt' ? 'text-moss' : opt === 'aptWithRestrictions' ? 'text-ember' : 'text-sienna'}`}>
-                {t(`preoccupational.attachments.aptOptions.${opt!}`)}
-              </span>
-            </label>
-          ))}
+
+        <div className="space-y-2">
+          {aptitudeOptions.map(({ value, color }) => {
+            const isSelected = result.aptitude === value;
+            const needsDetail = NEEDS_DETAIL.includes(value);
+            return (
+              <div key={value!}>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="radio"
+                    name="aptitude"
+                    checked={isSelected}
+                    onChange={() => selectAptitude(value)}
+                    className="accent-ember"
+                  />
+                  <span className={`text-sm font-mono ${color}`}>
+                    {t(`preoccupational.attachments.aptOptions.${value!}`)}
+                  </span>
+                </label>
+                {needsDetail && isSelected && (
+                  <input
+                    type="text"
+                    value={result.aptitudeDetail ?? ''}
+                    onChange={(e) => patchResult({ aptitudeDetail: e.target.value })}
+                    placeholder={t('preoccupational.attachments.aptOptions.detailPlaceholder')}
+                    className="mt-1 ml-6 w-full max-w-md px-3 py-1.5 bg-surface border border-border rounded font-mono text-sm text-text outline-none focus:border-moss focus:ring-1 focus:ring-moss/20 transition-colors"
+                  />
+                )}
+              </div>
+            );
+          })}
         </div>
+      </section>
+
+      {/* Enfermedades Preexistentes (read-only) */}
+      <section className="bg-surface border border-border rounded-md p-4">
+        <SectionTitle>{t('preoccupational.attachments.preexistingConditions')}</SectionTitle>
+        <PreexistingConditions exam={exam} t={t} />
+      </section>
+
+      {/* Comentarios */}
+      <section className="bg-surface border border-border rounded-md p-4">
+        <SectionTitle>{t('preoccupational.result.comments')}</SectionTitle>
+        <textarea
+          value={result.comments}
+          onChange={(e) => patchResult({ comments: e.target.value })}
+          rows={4}
+          className="w-full px-3 py-2.5 bg-surface border border-border rounded text-sm font-mono text-text outline-none focus:border-moss focus:ring-1 focus:ring-moss/20 transition-colors resize-none"
+        />
       </section>
     </div>
   );

@@ -21,19 +21,33 @@ import Modal from '@/components/ui/Modal';
 import Input from '@/components/ui/Input';
 import PatientSearch from '@/components/ui/PatientSearch';
 
+const APTITUDE_BADGE_CLASS: Partial<Record<NonNullable<AptitudeResult>, string>> = {
+  apt: 'badge-moss',
+  aptWithPreexistence: 'badge-ember',
+  transitoryInapt: 'badge-ember',
+  inapt: 'badge-sienna',
+  continuesApt: 'badge-moss',
+  continuesAptWithRestrictions: 'badge-ember',
+  requiresPeriodicControl: 'badge-ember',
+  requiresSpecialistConsultation: 'badge-ember',
+};
+
+const APTITUDE_BADGE_LABEL: Partial<Record<NonNullable<AptitudeResult>, string>> = {
+  apt: 'Apto',
+  aptWithPreexistence: 'Apto c/ preexistencia',
+  transitoryInapt: 'No apto transitorio',
+  inapt: 'No apto',
+  continuesApt: 'Apto',
+  continuesAptWithRestrictions: 'Apto c/ restricciones',
+  requiresPeriodicControl: 'Control periódico',
+  requiresSpecialistConsultation: 'Interconsulta',
+};
+
 function aptitudeBadge(aptitude: AptitudeResult) {
   if (!aptitude) return <span className="badge-muted">—</span>;
-  const map: Record<string, string> = {
-    apt: 'badge-moss',
-    aptWithRestrictions: 'badge-ember',
-    inapt: 'badge-sienna',
-  };
-  const label: Record<string, string> = {
-    apt: 'Apto',
-    aptWithRestrictions: 'Apto c/ restricciones',
-    inapt: 'No apto',
-  };
-  return <span className={map[aptitude]}>{label[aptitude]}</span>;
+  const cls = APTITUDE_BADGE_CLASS[aptitude] ?? 'badge-muted';
+  const label = APTITUDE_BADGE_LABEL[aptitude] ?? aptitude;
+  return <span className={cls}>{label}</span>;
 }
 
 function examTypeBadge(type: ExamType) {
@@ -84,6 +98,16 @@ export default function Preoccupational() {
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState<CreateForm>(EMPTY_FORM);
   const [linkedPatient, setLinkedPatient] = useState<Patient | null>(null);
+  const [submitted, setSubmitted] = useState(false);
+
+  const formErrors = {
+    company:    submitted && !form.company.trim()    ? t('preoccupational.form.errors.company')    : undefined,
+    place:      submitted && !form.place.trim()      ? t('preoccupational.form.errors.place')      : undefined,
+    documentId: submitted && !form.documentId.trim() ? t('preoccupational.form.errors.documentId') : undefined,
+    firstName:  submitted && !form.firstName.trim()  ? t('preoccupational.form.errors.firstName')  : undefined,
+    lastName:   submitted && !form.lastName.trim()   ? t('preoccupational.form.errors.lastName')   : undefined,
+  };
+  const isValid = Object.values(formErrors).every((e) => !e);
 
   const filtered = exams.filter((ex) => {
     const q = search.toLowerCase();
@@ -109,6 +133,14 @@ export default function Preoccupational() {
   const handlePatientClear = () => {
     setLinkedPatient(null);
     setForm((f) => ({ ...f, firstName: '', lastName: '', documentId: '' }));
+  };
+
+  const handleClose = () => { setShowCreate(false); setForm(EMPTY_FORM); setLinkedPatient(null); setSubmitted(false); };
+
+  const handleSubmit = () => {
+    setSubmitted(true);
+    if (!form.company.trim() || !form.place.trim() || !form.documentId.trim() || !form.firstName.trim() || !form.lastName.trim()) return;
+    handleCreate();
   };
 
   const handleCreate = () => {
@@ -243,7 +275,7 @@ export default function Preoccupational() {
 
       <Modal
         open={showCreate}
-        onClose={() => { setShowCreate(false); setForm(EMPTY_FORM); setLinkedPatient(null); }}
+        onClose={handleClose}
         title={t('preoccupational.new')}
         size="lg"
       >
@@ -274,11 +306,13 @@ export default function Preoccupational() {
               label={t('preoccupational.form.company')}
               value={form.company}
               onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))}
+              error={formErrors.company}
             />
             <Input
               label={t('preoccupational.form.place')}
               value={form.place}
               onChange={(e) => setForm((f) => ({ ...f, place: e.target.value }))}
+              error={formErrors.place}
             />
           </div>
 
@@ -313,6 +347,7 @@ export default function Preoccupational() {
                 label={t('preoccupational.form.documentId')}
                 value={form.documentId}
                 onChange={(e) => setForm((f) => ({ ...f, documentId: e.target.value }))}
+                error={formErrors.documentId}
               />
             </div>
           </div>
@@ -322,11 +357,13 @@ export default function Preoccupational() {
               label={t('preoccupational.form.firstName')}
               value={form.firstName}
               onChange={(e) => setForm((f) => ({ ...f, firstName: e.target.value }))}
+              error={formErrors.firstName}
             />
             <Input
               label={t('preoccupational.form.lastName')}
               value={form.lastName}
               onChange={(e) => setForm((f) => ({ ...f, lastName: e.target.value }))}
+              error={formErrors.lastName}
             />
           </div>
 
@@ -342,14 +379,17 @@ export default function Preoccupational() {
             </label>
           )}
 
+          {submitted && !isValid && (
+            <p className="text-xs text-sienna font-mono">
+              Completá todos los campos obligatorios para continuar.
+            </p>
+          )}
+
           <div className="flex justify-end gap-2 pt-2">
-            <Button variant="ghost" onClick={() => { setShowCreate(false); setForm(EMPTY_FORM); setLinkedPatient(null); }}>
+            <Button variant="ghost" onClick={handleClose}>
               {t('common.cancel')}
             </Button>
-            <Button
-              onClick={handleCreate}
-              disabled={!form.firstName.trim() || !form.lastName.trim()}
-            >
+            <Button onClick={handleSubmit}>
               {t('common.save')}
             </Button>
           </div>

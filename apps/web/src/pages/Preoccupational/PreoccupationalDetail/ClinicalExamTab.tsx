@@ -89,14 +89,14 @@ export default function ClinicalExamTab({ exam, onChange }: Props) {
           )}
           <div className="grid grid-cols-2 gap-3">
             <Input
-              label={t('preoccupational.clinicalExam.smokerAmount')}
-              value={pa.smokerAmount}
-              onChange={(e) => setPA({ smokerAmount: e.target.value })}
-            />
-            <Input
               label={t('preoccupational.clinicalExam.habits')}
               value={pa.habits}
               onChange={(e) => setPA({ habits: e.target.value })}
+            />
+            <Input
+              label={t('preoccupational.clinicalExam.smokerAmount')}
+              value={pa.smokerAmount}
+              onChange={(e) => setPA({ smokerAmount: e.target.value })}
             />
           </div>
           <Input

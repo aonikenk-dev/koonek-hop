@@ -44,9 +44,14 @@ const EXAM_TYPE_LABEL: Record<string, string> = {
 };
 
 const APTITUDE_LABEL: Record<string, string> = {
-  apt: 'APTO',
-  aptWithRestrictions: 'APTO CON RESTRICCIONES',
+  apt: 'APTO SIN PREEXISTENCIA',
+  aptWithPreexistence: 'APTO CON PREEXISTENCIA',
+  transitoryInapt: 'NO APTO TRANSITORIO',
   inapt: 'NO APTO',
+  continuesApt: 'CONTINÚA APTO',
+  continuesAptWithRestrictions: 'CONTINÚA APTO CON RESTRICCIONES',
+  requiresPeriodicControl: 'REQUIERE CONTROL PERIÓDICO',
+  requiresSpecialistConsultation: 'REQUIERE INTERCONSULTA',
 };
 
 type FinalExamKey = keyof XrayExam['finalExam'];
@@ -598,7 +603,7 @@ export default function PrintView({ exam }: Props) {
             <span style={{
               fontWeight: 'bold',
               textTransform: 'uppercase',
-              color: result.aptitude === 'apt' ? '#2d6a4f' : result.aptitude === 'aptWithRestrictions' ? '#b05a2a' : '#9b1c1c',
+              color: result.aptitude === 'apt' || result.aptitude === 'continuesApt' ? '#2d6a4f' : result.aptitude === 'inapt' ? '#9b1c1c' : '#b05a2a',
             }}>
               {APTITUDE_LABEL[result.aptitude]}
             </span>
