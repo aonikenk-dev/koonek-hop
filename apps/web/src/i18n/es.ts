@@ -809,7 +809,7 @@ const es = {
       permanentMedication: 'Medicación permanente',
       permanentMedicationDetail: 'Detalle de medicación',
       smokerAmount: 'Cantidad de cigarrillos/día',
-      habits: 'Hábitos',
+      habits: 'Hábitos Tóxicos',
       allergic: 'Alérgico',
       allergicType: 'Tipo de alergia',
       professionalDiseases: 'Enfermedades profesionales',

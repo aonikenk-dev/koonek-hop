@@ -1,6 +1,12 @@
 import type { Config } from 'tailwindcss';
 import { brand, surface, fontFamily } from '@koonek/design-tokens';
 
+// ─── Main UI font ──────────────────────────────────────────────────────────────
+// Change this one line to switch the primary typeface across the whole app.
+// Also update the Google Fonts URL in index.html to load the new family.
+const MAIN_FONT = 'Montserrat';
+// ───────────────────────────────────────────────────────────────────────────────
+
 export default {
   content: ['./index.html', './src/**/*.{ts,tsx}'],
   theme: {
@@ -28,7 +34,7 @@ export default {
       },
       fontFamily: {
         display: [fontFamily.display],
-        mono: [fontFamily.mono],
+        mono: [MAIN_FONT, 'ui-sans-serif', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         '2xs': ['10px', { lineHeight: '1.4', letterSpacing: '0.05em' }],
