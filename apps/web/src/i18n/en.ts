@@ -97,6 +97,7 @@ const en: Dictionary = {
     },
     upcomingAppointments: 'Upcoming appointments',
     recentPatients: 'Recent patients',
+    startConsultation: 'Start consultation',
   },
   doctors: {
     new: 'New doctor',
@@ -337,6 +338,31 @@ const en: Dictionary = {
       duration: 'Duration (min)',
       reason: 'Reason for visit',
       status: 'Status',
+      healthInsurance: 'Health insurance',
+      noInsurance: 'Private pay',
+      bookingType: 'Appointment type',
+      paymentType: 'Payment type',
+      paymentMethod: 'Payment method',
+      amount: 'Amount ($)',
+      sendWhatsapp: 'Send appointment confirmation via WhatsApp',
+      slots: {
+        loadButton: 'View availability',
+        loading: 'Loading available slots...',
+        noSlots: 'No slots available for this date.',
+      },
+    },
+    bookingTypeOptions: {
+      appointment: 'Appointment',
+      overbooking: 'Overbooking',
+    },
+    paymentTypeOptions: {
+      consultation: 'Consultation',
+      no_charge: 'No charge',
+      copay: 'Copay',
+    },
+    paymentMethodOptions: {
+      cash: 'Cash',
+      transfer: 'Bank transfer',
     },
     statusOptions: {
       scheduled: 'Scheduled',

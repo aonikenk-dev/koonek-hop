@@ -95,6 +95,7 @@ const es = {
     },
     upcomingAppointments: 'Próximos turnos',
     recentPatients: 'Pacientes recientes',
+    startConsultation: 'Iniciar consulta',
   },
   doctors: {
     new: 'Nuevo doctor',
@@ -335,6 +336,31 @@ const es = {
       duration: 'Duración (min)',
       reason: 'Motivo de consulta',
       status: 'Estado',
+      healthInsurance: 'Obra social',
+      noInsurance: 'Particular',
+      bookingType: 'Tipo de turno',
+      paymentType: 'Tipo de cobro',
+      paymentMethod: 'Forma de pago',
+      amount: 'Importe ($)',
+      sendWhatsapp: 'Enviar confirmación de turno por WhatsApp',
+      slots: {
+        loadButton: 'Ver horarios',
+        loading: 'Cargando turnos disponibles...',
+        noSlots: 'Sin turnos disponibles para esta fecha.',
+      },
+    },
+    bookingTypeOptions: {
+      appointment: 'Turno',
+      overbooking: 'Sobreturno',
+    },
+    paymentTypeOptions: {
+      consultation: 'Consulta',
+      no_charge: 'No paga',
+      copay: 'Coseguro',
+    },
+    paymentMethodOptions: {
+      cash: 'Efectivo',
+      transfer: 'Transferencia',
     },
     statusOptions: {
       scheduled: 'Agendado',

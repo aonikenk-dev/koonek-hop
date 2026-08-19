@@ -1,15 +1,23 @@
 export type AppointmentStatus = 'scheduled' | 'confirmed' | 'cancelled' | 'done' | 'overbooking' | 'blocked';
+export type PaymentType = 'consultation' | 'no_charge' | 'copay';
+export type PaymentMethod = 'cash' | 'transfer';
 
 export interface Appointment {
   id: string;
   /** Absent for 'blocked' entries (agenda blocks have no patient). */
   patientName?: string;
+  patientId?: string;
   doctorName: string;
   start: string;
   end: string;
   /** Reason for visit, or the block description when status is 'blocked'. */
   reason: string;
   status: AppointmentStatus;
+  healthInsuranceLabel?: string;
+  paymentType?: PaymentType;
+  paymentMethod?: PaymentMethod;
+  amount?: number;
+  sendWhatsapp?: boolean;
 }
 
 function atTime(daysOffset: number, hour: number, minute = 0): Date {

@@ -22,7 +22,9 @@ export interface Patient {
   healthRecordNumber: string;
   lastVisitAt: string;
   status: PatientStatus;
+  /** Primary health insurance. Secondary coverages go in secondaryInsurances. */
   healthInsurance: HealthInsurance | null;
+  secondaryInsurances?: HealthInsurance[];
   bloodType?: BloodType;
   rhFactor?: RhFactor;
 }
@@ -41,6 +43,7 @@ export const patients: Patient[] = [
     lastVisitAt: '2026-06-22',
     status: 'active',
     healthInsurance: { companyName: 'OSDE', planCode: '310', cardNumber: '0123456789', admissionDate: '2020-01-10' },
+    secondaryInsurances: [{ companyName: 'Swiss Medical', planCode: 'SMG30', cardNumber: '1122334455' }],
     bloodType: 'A',
     rhFactor: '+',
   },

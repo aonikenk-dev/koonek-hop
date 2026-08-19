@@ -6,10 +6,10 @@ export const kpis = {
 };
 
 export const upcomingAppointments = [
-  { id: 1, patient: 'Lucía Fernández', time: '09:30', reason: 'Control general' },
-  { id: 2, patient: 'Tomás Ibarra', time: '10:00', reason: 'Vacunación' },
-  { id: 3, patient: 'Carla Gómez', time: '11:15', reason: 'Seguimiento' },
-  { id: 4, patient: 'Diego Paz', time: '12:00', reason: 'Primera consulta' },
+  { id: 1, patient: 'Lucía Fernández', patientId: 'p1', time: '09:30', reason: 'Control general' },
+  { id: 2, patient: 'Tomás Ibarra',    patientId: 'p2', time: '10:00', reason: 'Vacunación' },
+  { id: 3, patient: 'Carla Gómez',     patientId: 'p3', time: '11:15', reason: 'Seguimiento' },
+  { id: 4, patient: 'Diego Paz',       patientId: 'p4', time: '12:00', reason: 'Primera consulta' },
 ];
 
 export const recentPatients = [
