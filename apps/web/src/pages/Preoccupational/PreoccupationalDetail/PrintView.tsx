@@ -625,6 +625,11 @@ export default function PrintView({ exam, onReady }: Props) {
             }}>
               {APTITUDE_LABEL[result.aptitude]}
             </span>
+            {result.aptitudeDetail && (
+              <div style={{ fontSize: '9.5pt', marginTop: 4, paddingLeft: 8, fontStyle: 'italic' }}>
+                {result.aptitudeDetail}
+              </div>
+            )}
           </div>
         )}
 
