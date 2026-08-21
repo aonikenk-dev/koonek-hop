@@ -277,6 +277,8 @@ export interface PreoccupationalExam {
   habitsDeclaration: {
     smokes: boolean;
     drinks: boolean;
+    drugs: boolean;
+    drugsDetail: string;
   };
   familyHistory: {
     hta: boolean;
@@ -427,7 +429,7 @@ export const preoccupationalExams: PreoccupationalExam[] = [
       exemptedFromMilitary: true,
       deniedLifeInsurance: false,
     },
-    habitsDeclaration: { smokes: true, drinks: true },
+    habitsDeclaration: { smokes: true, drinks: true, drugs: false, drugsDetail: '' },
     familyHistory: { hta: false, diabetes: false, neurological: false, neoplastic: false, other: '' },
     medicalHistory: {
       surgeries: '',
@@ -531,7 +533,7 @@ export const preoccupationalExams: PreoccupationalExam[] = [
       exemptedFromMilitary: false,
       deniedLifeInsurance: false,
     },
-    habitsDeclaration: { smokes: false, drinks: false },
+    habitsDeclaration: { smokes: false, drinks: false, drugs: false, drugsDetail: '' },
     familyHistory: { hta: true, diabetes: false, neurological: false, neoplastic: false, other: '' },
     medicalHistory: {
       surgeries: 'Cesárea 2015',
@@ -619,7 +621,7 @@ export const preoccupationalExams: PreoccupationalExam[] = [
       exemptedFromMilitary: false,
       deniedLifeInsurance: false,
     },
-    habitsDeclaration: { smokes: true, drinks: false },
+    habitsDeclaration: { smokes: true, drinks: false, drugs: false, drugsDetail: '' },
     familyHistory: { hta: true, diabetes: true, neurological: false, neoplastic: false, other: '' },
     medicalHistory: {
       surgeries: '',

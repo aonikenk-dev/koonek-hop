@@ -760,6 +760,8 @@ const en: Dictionary = {
       swornDeclarationRemove: 'Remove',
       smokes: 'Smoker',
       drinks: 'Drinks alcohol',
+      drugs: 'Drugs',
+      drugsDetail: 'Which drugs',
       hta: 'HTA',
       diabetes: 'Diabetes',
       neurological: 'Neurological',

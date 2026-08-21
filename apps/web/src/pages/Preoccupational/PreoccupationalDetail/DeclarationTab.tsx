@@ -224,7 +224,7 @@ export default function DeclarationTab({ exam, onChange }: Props) {
       {/* Hábitos */}
       <section className="bg-surface border border-border rounded-md p-4">
         <SectionTitle>{t('preoccupational.declaration.habits')}</SectionTitle>
-        <div className="flex gap-6">
+        <div className="flex gap-6 flex-wrap">
           <CheckField
             label={t('preoccupational.declaration.smokes')}
             checked={exam.habitsDeclaration.smokes}
@@ -239,7 +239,25 @@ export default function DeclarationTab({ exam, onChange }: Props) {
               onChange({ habitsDeclaration: { ...exam.habitsDeclaration, drinks: v } })
             }
           />
+          <CheckField
+            label={t('preoccupational.declaration.drugs')}
+            checked={exam.habitsDeclaration.drugs ?? false}
+            onChange={(v) =>
+              onChange({ habitsDeclaration: { ...exam.habitsDeclaration, drugs: v, drugsDetail: v ? exam.habitsDeclaration.drugsDetail : '' } })
+            }
+          />
         </div>
+        {exam.habitsDeclaration.drugs && (
+          <div className="mt-3">
+            <Input
+              label={t('preoccupational.declaration.drugsDetail')}
+              value={exam.habitsDeclaration.drugsDetail ?? ''}
+              onChange={(e) =>
+                onChange({ habitsDeclaration: { ...exam.habitsDeclaration, drugsDetail: e.target.value } })
+              }
+            />
+          </div>
+        )}
       </section>
 
       {/* Antecedentes Familiares */}

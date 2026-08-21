@@ -758,6 +758,8 @@ const es = {
       swornDeclarationRemove: 'Quitar',
       smokes: 'Fuma',
       drinks: 'Bebe alcohol',
+      drugs: 'Drogas',
+      drugsDetail: 'Cuáles drogas consume',
       hta: 'HTA',
       diabetes: 'Diabetes',
       neurological: 'Neurológicos',
