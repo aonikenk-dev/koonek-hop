@@ -1,5 +1,5 @@
 import { apiFetch } from './api';
-import type { PreoccupationalExam, AttachmentFile } from '@/data/mock/preoccupational';
+import type { PreoccupationalExam, AttachmentFile, ExamRequirements } from '@/data/mock/preoccupational';
 
 export interface PatientSearchResult {
   source: 'preoccupational' | 'patients';
@@ -39,13 +39,30 @@ function sanitizeFiles(files: AttachmentFile[] | undefined): Array<{ id: string;
     .map(({ id, name, url }) => ({ id, name, url }));
 }
 
-export async function listExams(params?: { search?: string; status?: string }): Promise<PreoccupationalExam[]> {
+export interface ListExamsParams {
+  search?: string;
+  status?: string;
+  page?: number;
+  limit?: number;
+  sortBy?: string;
+  sortOrder?: 'asc' | 'desc';
+}
+
+export interface ListExamsResult {
+  data: PreoccupationalExam[];
+  pagination: { total: number; page: number; limit: number };
+}
+
+export async function listExams(params?: ListExamsParams): Promise<ListExamsResult> {
   const qs = new URLSearchParams();
   if (params?.search) qs.set('search', params.search);
   if (params?.status) qs.set('status', params.status);
+  if (params?.page) qs.set('page', String(params.page));
+  if (params?.limit) qs.set('limit', String(params.limit));
+  if (params?.sortBy) qs.set('sortBy', params.sortBy);
+  if (params?.sortOrder) qs.set('sortOrder', params.sortOrder);
   const query = qs.toString() ? `?${qs}` : '';
-  const res = await apiFetch<ListResponse>(`/api/preoccupational${query}`);
-  return res.data;
+  return apiFetch<ListExamsResult>(`/api/preoccupational${query}`);
 }
 
 export async function getExam(id: string): Promise<PreoccupationalExam> {
@@ -54,7 +71,8 @@ export async function getExam(id: string): Promise<PreoccupationalExam> {
 
 export interface CreateExamPayload {
   examType: PreoccupationalExam['examType'];
-  date: string;
+  summonDate?: string;
+  requirements?: ExamRequirements;
   company: string;
   place: string;
   patient: {
@@ -64,6 +82,16 @@ export interface CreateExamPayload {
     documentId: string;
     linkedPatientId?: string;
     addToPatients: boolean;
+    cuil?: string;
+    dateOfBirth?: string;
+    birthPlace?: string;
+    maritalStatus?: string;
+    numberOfChildren?: number;
+    address?: string;
+    city?: string;
+    postalCode?: string;
+    state?: string;
+    country?: string;
   };
 }
 
@@ -75,10 +103,12 @@ export async function createExam(payload: CreateExamPayload): Promise<Preoccupat
 }
 
 export async function saveExam(id: string, exam: PreoccupationalExam): Promise<PreoccupationalExam> {
-  const { patient, examType, date, status, ...rest } = exam;
+  const { patient, examType, date, summonDate, requirements, status, ...rest } = exam;
   const body = {
     examType,
-    date,
+    date: date ?? null,
+    summonDate: summonDate ?? null,
+    requirements,
     status,
     company: rest.company,
     place: rest.place,

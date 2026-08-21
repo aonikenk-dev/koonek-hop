@@ -677,13 +677,14 @@ const en: Dictionary = {
       inapt: 'Inapt',
     },
     status: {
-      draft: 'Draft',
+      draft: 'Pending',
       completed: 'Completed',
     },
     table: {
       patient: 'Worker',
       examType: 'Type',
-      date: 'Date',
+      date: 'Exam Date',
+      summonDate: 'Summon Date',
       company: 'Company',
       position: 'Position',
       status: 'Status',
@@ -691,7 +692,16 @@ const en: Dictionary = {
     },
     form: {
       examType: 'Exam type',
-      date: 'Date',
+      date: 'Exam Date',
+      summonDate: 'Summon Date',
+      requirements: 'Exam Requirements',
+      req: {
+        clinicalExam: 'Clinical exam',
+        spirometry: 'Spirometry',
+        xray: 'Radiographic exam',
+        audiometry: 'Audiometry',
+        other: 'Other',
+      },
       company: 'Company',
       place: 'Place',
       firstName: 'First name',
@@ -717,6 +727,8 @@ const en: Dictionary = {
       country: 'Country',
     },
     tabs: {
+      pending: 'Pending',
+      completed: 'Completed',
       summary: 'Summary',
       declaration: 'Data & History',
       clinicalExam: 'Clinical Exam',

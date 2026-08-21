@@ -675,13 +675,14 @@ const es = {
       inapt: 'No apto',
     },
     status: {
-      draft: 'Borrador',
+      draft: 'Pendiente',
       completed: 'Completado',
     },
     table: {
       patient: 'Trabajador',
       examType: 'Tipo',
-      date: 'Fecha',
+      date: 'Fecha Realización',
+      summonDate: 'Fecha Citación',
       company: 'Empresa',
       position: 'Puesto',
       status: 'Estado',
@@ -689,7 +690,16 @@ const es = {
     },
     form: {
       examType: 'Tipo de examen',
-      date: 'Fecha',
+      date: 'Fecha Realización',
+      summonDate: 'Fecha de Citación',
+      requirements: 'Requerimientos del Examen',
+      req: {
+        clinicalExam: 'Examen clínico',
+        spirometry: 'Espirometría',
+        xray: 'Examen radiográfico',
+        audiometry: 'Audiometría',
+        other: 'Otros',
+      },
       company: 'Empresa',
       place: 'Lugar',
       firstName: 'Nombre',
@@ -715,6 +725,8 @@ const es = {
       country: 'País',
     },
     tabs: {
+      pending: 'Pendientes',
+      completed: 'Completados',
       summary: 'Resumen',
       declaration: 'Datos y Antecedentes',
       clinicalExam: 'Examen Clínico',

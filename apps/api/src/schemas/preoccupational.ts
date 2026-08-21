@@ -24,17 +24,29 @@ const PatientUpdateSchema = PatientCreateSchema.partial().omit({
   addToPatients: true,
 });
 
+const ExamRequirementsSchema = z.object({
+  clinicalExam: z.boolean().optional().default(false),
+  spirometry: z.boolean().optional().default(false),
+  xray: z.boolean().optional().default(false),
+  audiometry: z.boolean().optional().default(false),
+  other: z.string().optional().default(''),
+});
+
 export const CreateExamSchema = z.object({
   examType: z.enum(['preoccupational', 'periodic', 'egress']),
-  date: z.string().min(1),
+  date: z.string().optional(),
+  summonDate: z.string().optional(),
   company: z.string().min(1),
   place: z.string().min(1),
+  requirements: ExamRequirementsSchema.optional(),
   patient: PatientCreateSchema,
 });
 
 export const UpdateExamSchema = z.object({
   examType: z.enum(['preoccupational', 'periodic', 'egress']).optional(),
   date: z.string().optional(),
+  summonDate: z.string().optional().nullable(),
+  requirements: ExamRequirementsSchema.optional(),
   company: z.string().optional(),
   place: z.string().optional(),
   position: z.string().optional(),

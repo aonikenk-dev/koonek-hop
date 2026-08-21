@@ -1,4 +1,4 @@
-import type { PreoccupationalExam } from '@/data/mock/preoccupational';
+import type { PreoccupationalExam, ExamRequirements, ExamType } from '@/data/mock/preoccupational';
 import { useApp } from '@/contexts/AppContext';
 import Input from '@/components/ui/Input';
 import FileUploader from '@/components/ui/FileUploader';
@@ -41,8 +41,78 @@ function CheckField({
 export default function DeclarationTab({ exam, onChange }: Props) {
   const { t } = useApp();
 
+  const locked = exam.status === 'completed';
+  const req = exam.requirements ?? { clinicalExam: false, spirometry: false, xray: false, audiometry: false, other: '' };
+  const setReq = (patch: Partial<ExamRequirements>) => { if (!locked) onChange({ requirements: { ...req, ...patch } }); };
+
   return (
     <div className="space-y-6">
+      {/* Datos del Examen */}
+      <section className="bg-surface border border-border rounded-md p-4">
+        <div className="flex items-center justify-between mb-3">
+          <SectionTitle>Datos del Examen</SectionTitle>
+          {locked && (
+            <span className="text-2xs font-mono text-muted badge-muted">Solo lectura</span>
+          )}
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
+          <div className="space-y-1.5">
+            <label className="text-2xs font-mono text-muted uppercase tracking-wide">{t('preoccupational.form.examType')}</label>
+            <select
+              value={exam.examType}
+              disabled={locked}
+              onChange={(e) => onChange({ examType: e.target.value as ExamType })}
+              className="w-full px-3 py-2.5 bg-surface border border-border rounded font-mono text-sm text-text outline-none focus:border-moss focus:ring-1 focus:ring-moss/20 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <option value="preoccupational">{t('preoccupational.examTypes.preoccupational')}</option>
+              <option value="periodic">{t('preoccupational.examTypes.periodic')}</option>
+              <option value="egress">{t('preoccupational.examTypes.egress')}</option>
+            </select>
+          </div>
+          <Input
+            label={t('preoccupational.form.summonDate')}
+            type="date"
+            value={exam.summonDate ?? ''}
+            disabled={locked}
+            onChange={(e) => onChange({ summonDate: e.target.value || null })}
+          />
+          <Input
+            label={t('preoccupational.form.date')}
+            type="date"
+            value={exam.date ? exam.date.slice(0, 10) : ''}
+            disabled={locked}
+            onChange={(e) => onChange({ date: e.target.value })}
+          />
+        </div>
+        <div className="mt-4 space-y-2">
+          <p className="text-2xs font-mono text-muted uppercase tracking-widest">{t('preoccupational.form.requirements')}</p>
+          <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+            {(['clinicalExam', 'spirometry', 'xray', 'audiometry'] as const).map((key) => (
+              <label key={key} className={`flex items-center gap-2 py-0.5 ${locked ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}`}>
+                <input
+                  type="checkbox"
+                  checked={req[key]}
+                  disabled={locked}
+                  onChange={(e) => setReq({ [key]: e.target.checked })}
+                  className="accent-ember"
+                />
+                <span className="text-sm font-mono text-text">{t(`preoccupational.form.req.${key}`)}</span>
+              </label>
+            ))}
+          </div>
+          <div className="space-y-1 mt-1">
+            <label className="text-2xs font-mono text-muted uppercase tracking-wide">{t('preoccupational.form.req.other')}</label>
+            <textarea
+              value={req.other}
+              disabled={locked}
+              onChange={(e) => setReq({ other: e.target.value })}
+              rows={2}
+              className="w-full px-3 py-2 bg-surface border border-border rounded font-mono text-sm text-text outline-none focus:border-moss focus:ring-1 focus:ring-moss/20 transition-colors resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+            />
+          </div>
+        </div>
+      </section>
+
       {/* Datos Laborales */}
       <section className="bg-surface border border-border rounded-md p-4">
         <SectionTitle>{t('preoccupational.declaration.laborData')}</SectionTitle>

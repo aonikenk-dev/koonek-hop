@@ -1,4 +1,4 @@
-import type { PreoccupationalExam, AptitudeResult } from '@/data/mock/preoccupational';
+import type { PreoccupationalExam, AptitudeResult, ExamRequirements } from '@/data/mock/preoccupational';
 import { useApp } from '@/contexts/AppContext';
 
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
@@ -43,6 +43,16 @@ interface Props {
   exam: PreoccupationalExam;
 }
 
+function requirementsList(req: ExamRequirements, t: (k: string) => string): string[] {
+  const items: string[] = [];
+  if (req.clinicalExam) items.push(t('preoccupational.form.req.clinicalExam'));
+  if (req.spirometry) items.push(t('preoccupational.form.req.spirometry'));
+  if (req.xray) items.push(t('preoccupational.form.req.xray'));
+  if (req.audiometry) items.push(t('preoccupational.form.req.audiometry'));
+  if (req.other) items.push(req.other);
+  return items;
+}
+
 export default function SummaryTab({ exam }: Props) {
   const { t } = useApp();
   const { patient, result } = exam;
@@ -53,6 +63,42 @@ export default function SummaryTab({ exam }: Props) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+
+      <div className="bg-surface border border-border rounded-md p-4 space-y-1">
+        <p className="text-2xs text-muted tracking-widest uppercase font-mono mb-2">
+          {t('preoccupational.summary.examInfo')}
+        </p>
+        <InfoRow
+          label={t('preoccupational.table.examType')}
+          value={t(`preoccupational.examTypes.${exam.examType}`)}
+        />
+        {exam.summonDate && (
+          <InfoRow label={t('preoccupational.form.summonDate')} value={new Date(exam.summonDate).toLocaleDateString('es-AR')} />
+        )}
+        <InfoRow label={t('preoccupational.form.date')} value={exam.date ? new Date(exam.date).toLocaleDateString('es-AR') : '—'} />
+        <InfoRow label={t('preoccupational.form.company')} value={exam.company} />
+        {exam.place && <InfoRow label={t('preoccupational.summary.place')} value={exam.place} />}
+        {exam.position && <InfoRow label={t('preoccupational.summary.position')} value={exam.position} />}
+        {exam.tasks && <InfoRow label={t('preoccupational.summary.tasks')} value={exam.tasks} />}
+        {exam.requirements && (() => {
+          const items = requirementsList(exam.requirements, t);
+          return items.length > 0 ? (
+            <InfoRow
+              label={t('preoccupational.form.requirements')}
+              value={<span className="text-sm text-text font-mono">{items.join(', ')}</span>}
+            />
+          ) : null;
+        })()}
+        <InfoRow
+          label={t('preoccupational.table.status')}
+          value={
+            <span className={exam.status === 'completed' ? 'badge-moss' : 'badge-muted'}>
+              {t(`preoccupational.status.${exam.status}`)}
+            </span>
+          }
+        />
+      </div>
+      
       <div className="bg-surface border border-border rounded-md p-4 space-y-1">
         <p className="text-2xs text-muted tracking-widest uppercase font-mono mb-2">
           {t('preoccupational.summary.patientInfo')}
@@ -83,29 +129,6 @@ export default function SummaryTab({ exam }: Props) {
             value={`${patient.address}, ${patient.city}${patient.state ? `, ${patient.state}` : ''}`}
           />
         )}
-      </div>
-
-      <div className="bg-surface border border-border rounded-md p-4 space-y-1">
-        <p className="text-2xs text-muted tracking-widest uppercase font-mono mb-2">
-          {t('preoccupational.summary.examInfo')}
-        </p>
-        <InfoRow
-          label={t('preoccupational.table.examType')}
-          value={t(`preoccupational.examTypes.${exam.examType}`)}
-        />
-        <InfoRow label={t('preoccupational.form.date')} value={new Date(exam.date).toLocaleDateString('es-AR')} />
-        <InfoRow label={t('preoccupational.form.company')} value={exam.company} />
-        {exam.place && <InfoRow label={t('preoccupational.summary.place')} value={exam.place} />}
-        {exam.position && <InfoRow label={t('preoccupational.summary.position')} value={exam.position} />}
-        {exam.tasks && <InfoRow label={t('preoccupational.summary.tasks')} value={exam.tasks} />}
-        <InfoRow
-          label={t('preoccupational.table.status')}
-          value={
-            <span className={exam.status === 'completed' ? 'badge-moss' : 'badge-muted'}>
-              {t(`preoccupational.status.${exam.status}`)}
-            </span>
-          }
-        />
       </div>
 
       <div className="bg-surface border border-border rounded-md p-4 space-y-3">

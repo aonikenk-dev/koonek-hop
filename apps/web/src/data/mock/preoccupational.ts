@@ -240,10 +240,28 @@ export interface ExamResult {
   aptitudeDetail: string;
 }
 
+export interface ExamRequirements {
+  clinicalExam: boolean;
+  spirometry: boolean;
+  xray: boolean;
+  audiometry: boolean;
+  other: string;
+}
+
+export const EMPTY_REQUIREMENTS: ExamRequirements = {
+  clinicalExam: false,
+  spirometry: false,
+  xray: false,
+  audiometry: false,
+  other: '',
+};
+
 export interface PreoccupationalExam {
   id: string;
   examType: ExamType;
-  date: string;
+  date: string | null;
+  summonDate?: string | null;
+  requirements: ExamRequirements;
   company: string;
   place: string;
   status: ExamStatus;

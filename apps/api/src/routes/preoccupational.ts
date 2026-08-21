@@ -37,7 +37,16 @@ function serializeExam(exam: any) {
   return {
     id: exam.id,
     examType: EXAM_TYPE_REVERSE[exam.examType as keyof typeof EXAM_TYPE_REVERSE] ?? exam.examType,
-    date: exam.date.toISOString().split('T')[0],
+    date: exam.date ? exam.date.toISOString().split('T')[0] : null,
+    summonDate: exam.summonDate ? exam.summonDate.toISOString().split('T')[0] : null,
+    requirements: {
+      clinicalExam: false,
+      spirometry: false,
+      xray: false,
+      audiometry: false,
+      other: '',
+      ...(exam.requirements as Record<string, unknown>),
+    },
     company: exam.company,
     place: exam.place,
     status: STATUS_REVERSE[exam.status as keyof typeof STATUS_REVERSE] ?? exam.status,
@@ -176,12 +185,21 @@ router.get('/patient-search', async (req: Request, res: Response) => {
   res.json(results);
 });
 
+const SORTABLE_FIELDS = new Set(['summonDate', 'date', 'createdAt', 'company']);
+
 // ── GET /preoccupational ──────────────────────────────────────────────────────
 // List exams for the authenticated organization.
-// Query params: search (string), status (draft|completed), page (int), limit (int)
+// Query params: search, status (draft|completed), page, limit, sortBy, sortOrder (asc|desc)
 router.get('/', async (req: Request, res: Response) => {
   const orgId = req.auth!.organizationId;
-  const { search, status, page = '1', limit = '50' } = req.query as Record<string, string>;
+  const {
+    search,
+    status,
+    page = '1',
+    limit = '20',
+    sortBy = 'createdAt',
+    sortOrder = 'desc',
+  } = req.query as Record<string, string>;
 
   const skip = (parseInt(page) - 1) * parseInt(limit);
   const take = parseInt(limit);
@@ -202,11 +220,14 @@ router.get('/', async (req: Request, res: Response) => {
     ];
   }
 
+  const safeSortBy = SORTABLE_FIELDS.has(sortBy) ? sortBy : 'createdAt';
+  const safeSortOrder = sortOrder === 'asc' ? 'asc' : 'desc';
+
   const [exams, total] = await Promise.all([
     prisma.preoccupationalExam.findMany({
       where,
       include: PATIENT_INCLUDE,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { [safeSortBy]: safeSortOrder },
       skip,
       take,
     }),
@@ -243,7 +264,7 @@ router.post('/', async (req: Request, res: Response) => {
     return res.status(400).json({ error: parsed.error.flatten() });
   }
 
-  const { examType, date, company, place, patient: p } = parsed.data;
+  const { examType, date, summonDate, company, place, requirements, patient: p } = parsed.data;
   const orgId = req.auth!.organizationId;
 
   const exam = await prisma.$transaction(async (tx) => {
@@ -273,7 +294,9 @@ router.post('/', async (req: Request, res: Response) => {
       data: {
         organizationId: orgId,
         examType: EXAM_TYPE_MAP[examType],
-        date: new Date(date),
+        date: date ? new Date(date) : null,
+        summonDate: summonDate ? new Date(summonDate) : null,
+        requirements: asJson(requirements ?? {}),
         company,
         place,
         patient: {
@@ -326,6 +349,8 @@ router.put('/:id', async (req: Request, res: Response) => {
     examType,
     status,
     date,
+    summonDate,
+    requirements,
     ...rest
   } = parsed.data;
 
@@ -359,6 +384,8 @@ router.put('/:id', async (req: Request, res: Response) => {
         ...(examType !== undefined && { examType: EXAM_TYPE_MAP[examType] }),
         ...(status !== undefined && { status: STATUS_MAP[status] }),
         ...(date !== undefined && { date: new Date(date) }),
+        ...(summonDate !== undefined && { summonDate: summonDate ? new Date(summonDate) : null }),
+        ...(requirements !== undefined && { requirements: asJson(requirements) }),
         ...(rest.company !== undefined && { company: rest.company }),
         ...(rest.place !== undefined && { place: rest.place }),
         ...(rest.position !== undefined && { position: rest.position }),
@@ -395,7 +422,7 @@ router.patch('/:id/status', async (req: Request, res: Response) => {
 
   const existing = await prisma.preoccupationalExam.findFirst({
     where: { id: req.params['id'], organizationId: orgId },
-    select: { id: true },
+    select: { id: true, date: true },
   });
   if (!existing) {
     return res.status(404).json({ error: 'Exam not found' });
@@ -403,7 +430,11 @@ router.patch('/:id/status', async (req: Request, res: Response) => {
 
   const exam = await prisma.preoccupationalExam.update({
     where: { id: req.params['id'] },
-    data: { status: STATUS_MAP[status as 'draft' | 'completed'] },
+    data: {
+      status: STATUS_MAP[status as 'draft' | 'completed'],
+      // Set exam date to now when completing, only if not already recorded
+      ...(status === 'completed' && !existing.date && { date: new Date() }),
+    },
     include: PATIENT_INCLUDE,
   });
 

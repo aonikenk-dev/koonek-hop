@@ -132,13 +132,15 @@ model PreoccupationalExam {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id])
 
-  examType ExamType
-  date     DateTime
-  company  String
-  place    String
-  status   ExamStatus @default(DRAFT)
-  position String     @default("")
-  tasks    String     @default("")
+  examType    ExamType
+  date        DateTime?
+  summonDate  DateTime?
+  company     String
+  place       String
+  status      ExamStatus @default(DRAFT)
+  position    String     @default("")
+  tasks       String     @default("")
+  requirements Json      @default("{}")
 
   // Complex clinical data — stored as JSON, managed entirely by the application layer
   declaration         Json @default("{}")
