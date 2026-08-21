@@ -402,6 +402,7 @@ export const preoccupationalExams: PreoccupationalExam[] = [
     date: '2020-11-05',
     company: 'Gustavo Alvarez',
     place: 'Pto. San Julián',
+    requirements: EMPTY_REQUIREMENTS,
     status: 'completed',
     patient: {
       id: 'pp1',
@@ -506,6 +507,7 @@ export const preoccupationalExams: PreoccupationalExam[] = [
     date: '2024-03-15',
     company: 'Clínica San Martín',
     place: 'Río Gallegos',
+    requirements: EMPTY_REQUIREMENTS,
     status: 'completed',
     patient: {
       id: 'pp2',
@@ -594,6 +596,7 @@ export const preoccupationalExams: PreoccupationalExam[] = [
     date: '2024-06-20',
     company: 'Constructora Patagónica S.A.',
     place: 'Caleta Olivia',
+    requirements: EMPTY_REQUIREMENTS,
     status: 'draft',
     patient: {
       id: 'pp3',

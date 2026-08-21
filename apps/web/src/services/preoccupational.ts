@@ -26,10 +26,6 @@ export async function searchPatients(q: string): Promise<PatientSearchResult[]> 
   return apiFetch<PatientSearchResult[]>(`/api/preoccupational/patient-search?q=${encodeURIComponent(q.trim())}`);
 }
 
-interface ListResponse {
-  data: PreoccupationalExam[];
-  pagination: { total: number; page: number; limit: number };
-}
 
 /** Strip any remaining blob: URLs (session-only) — shouldn't exist now that uploads go via API. */
 function sanitizeFiles(files: AttachmentFile[] | undefined): Array<{ id: string; name: string; url: string }> {
