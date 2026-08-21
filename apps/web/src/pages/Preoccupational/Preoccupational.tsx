@@ -472,6 +472,21 @@ export default function Preoccupational() {
             />
           </div>
 
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label={t('preoccupational.form.company')}
+              value={form.company}
+              onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))}
+              error={formErrors.company}
+            />
+            <Input
+              label={t('preoccupational.form.place')}
+              value={form.place}
+              onChange={(e) => setForm((f) => ({ ...f, place: e.target.value }))}
+              error={formErrors.place}
+            />
+          </div>
+
           <div className="space-y-2 border border-border rounded-md p-3">
             <p className="text-2xs font-mono text-muted uppercase tracking-widest">{t('preoccupational.form.requirements')}</p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
@@ -496,21 +511,6 @@ export default function Preoccupational() {
                 className="w-full px-3 py-2 bg-surface border border-border rounded font-mono text-sm text-text outline-none focus:border-moss focus:ring-1 focus:ring-moss/20 transition-colors resize-none"
               />
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <Input
-              label={t('preoccupational.form.company')}
-              value={form.company}
-              onChange={(e) => setForm((f) => ({ ...f, company: e.target.value }))}
-              error={formErrors.company}
-            />
-            <Input
-              label={t('preoccupational.form.place')}
-              value={form.place}
-              onChange={(e) => setForm((f) => ({ ...f, place: e.target.value }))}
-              error={formErrors.place}
-            />
           </div>
 
           <div>

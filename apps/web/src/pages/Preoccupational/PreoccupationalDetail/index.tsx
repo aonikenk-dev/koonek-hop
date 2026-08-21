@@ -29,6 +29,7 @@ export default function PreoccupationalDetail() {
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isPrinting, setIsPrinting] = useState(false);
+  const [printReady, setPrintReady] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -76,7 +77,7 @@ export default function PreoccupationalDetail() {
   };
 
   const handlePrint = async () => {
-    if (!printRef.current || isPrinting) return;
+    if (!printRef.current || isPrinting || !printReady) return;
     setIsPrinting(true);
 
     try {
@@ -95,7 +96,7 @@ export default function PreoccupationalDetail() {
       let headerPdfH = 0;
 
       // Capture all form pages as JPEG bytes before hiding container
-      type CapturedPage = { imgBytes: ArrayBuffer; isDeclaration: boolean };
+      type CapturedPage = { imgBytes: ArrayBuffer; pvPage: string };
       const capturedPages: CapturedPage[] = [];
 
       try {
@@ -113,7 +114,7 @@ export default function PreoccupationalDetail() {
         for (const pageEl of pageEls) {
           const canvas = await html2canvas(pageEl, { scale: 2, useCORS: true, backgroundColor: '#ffffff', logging: false });
           const imgBytes = await fetch(canvas.toDataURL('image/jpeg', 0.92)).then((r) => r.arrayBuffer());
-          capturedPages.push({ imgBytes, isDeclaration: pageEl.dataset.pvPage === 'declaration' });
+          capturedPages.push({ imgBytes, pvPage: pageEl.dataset.pvPage ?? '' });
         }
       } finally {
         container.style.visibility = 'hidden';
@@ -165,24 +166,27 @@ export default function PreoccupationalDetail() {
         }
       };
 
-      // 3. Build PDF: form pages, interleaving sworn declaration files after their page
-      for (const { imgBytes, isDeclaration } of capturedPages) {
+      // 3. Build PDF — interleave files per their associated page:
+      //    - sworn declaration files: after declaration page, WITH header
+      //    - spirometry files:        after spirometry page, WITHOUT header
+      //    - xray files:              after xray page, WITHOUT header
+      //    - other attachments:       BEFORE result/signatures page, WITHOUT header
+      for (const { imgBytes, pvPage } of capturedPages) {
+        // Other attachments go before the result page
+        if (pvPage === 'result') {
+          for (const att of exam.attachments) {
+            await embedFiles(att.files, false);
+          }
+        }
+
         const img = await pdfDoc.embedJpg(imgBytes);
         const page = pdfDoc.addPage(A4);
         const scale = Math.min(A4[0] / img.width, A4[1] / img.height);
         page.drawImage(img, { x: (A4[0] - img.width * scale) / 2, y: (A4[1] - img.height * scale) / 2, width: img.width * scale, height: img.height * scale });
 
-        // Sworn declaration files go immediately after the "Datos y Antecedentes" page, WITH header
-        if (isDeclaration) {
-          await embedFiles(exam.swornDeclarationFiles ?? [], true);
-        }
-      }
-
-      // 4. Remaining file groups appended at end WITHOUT header
-      await embedFiles(exam.spirometryFiles ?? [], false);
-      await embedFiles(exam.xrayFiles ?? [], false);
-      for (const att of exam.attachments) {
-        await embedFiles(att.files, false);
+        if (pvPage === 'declaration') await embedFiles(exam.swornDeclarationFiles ?? [], true);
+        else if (pvPage === 'spirometry') await embedFiles(exam.spirometryFiles ?? [], false);
+        else if (pvPage === 'xray') await embedFiles(exam.xrayFiles ?? [], false);
       }
 
       const pdfBytes = await pdfDoc.save();
@@ -225,9 +229,9 @@ export default function PreoccupationalDetail() {
             <Button
               leftIcon={isPrinting ? <Loader2 size={14} className="animate-spin" /> : <Printer size={14} />}
               onClick={() => { void handlePrint(); }}
-              disabled={isPrinting}
+              disabled={isPrinting || !printReady}
             >
-              {isPrinting ? 'Generando PDF...' : t('preoccupational.print')}
+              {isPrinting ? 'Generando PDF...' : !printReady ? 'Cargando...' : t('preoccupational.print')}
             </Button>
           )}
         </div>
@@ -257,7 +261,7 @@ export default function PreoccupationalDetail() {
         aria-hidden="true"
         style={{ position: 'absolute', left: '-9999px', top: 0, width: '210mm', visibility: 'hidden', pointerEvents: 'none' }}
       >
-        <PrintView exam={exam} />
+        <PrintView exam={exam} onReady={setPrintReady} />
       </div>
 
       {/* Tab content */}

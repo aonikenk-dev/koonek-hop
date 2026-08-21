@@ -142,6 +142,21 @@ export default function DeclarationTab({ exam, onChange }: Props) {
         <SectionTitle>{t('preoccupational.declaration.personalData')}</SectionTitle>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           <Input
+            label={t('preoccupational.form.dateOfBirth')}
+            type="date"
+            value={exam.patient.dateOfBirth}
+            onChange={(e) =>
+              onChange({ patient: { ...exam.patient, dateOfBirth: e.target.value } })
+            }
+          />
+          <Input
+            label={t('preoccupational.form.birthPlace')}
+            value={exam.patient.birthPlace}
+            onChange={(e) =>
+              onChange({ patient: { ...exam.patient, birthPlace: e.target.value } })
+            }
+          />
+          <Input
             label={t('preoccupational.form.maritalStatus')}
             value={exam.patient.maritalStatus}
             onChange={(e) =>
@@ -155,13 +170,6 @@ export default function DeclarationTab({ exam, onChange }: Props) {
             value={String(exam.patient.numberOfChildren)}
             onChange={(e) =>
               onChange({ patient: { ...exam.patient, numberOfChildren: parseInt(e.target.value) || 0 } })
-            }
-          />
-          <Input
-            label={t('preoccupational.form.birthPlace')}
-            value={exam.patient.birthPlace}
-            onChange={(e) =>
-              onChange({ patient: { ...exam.patient, birthPlace: e.target.value } })
             }
           />
           <Input
