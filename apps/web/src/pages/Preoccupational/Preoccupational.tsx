@@ -66,9 +66,14 @@ function examTypeBadge(type: ExamType) {
   return <span className={map[type]}>{label[type]}</span>;
 }
 
+function parseLocalDate(d: string) {
+  const [y, m, day] = d.split('-');
+  return new Date(+y, +m - 1, +day);
+}
+
 function fmtDate(d: string | null | undefined) {
   if (!d) return <span className="text-muted">—</span>;
-  return <span className="text-sm text-text font-mono">{new Date(d).toLocaleDateString('es-AR')}</span>;
+  return <span className="text-sm text-text font-mono">{parseLocalDate(d).toLocaleDateString('es-AR')}</span>;
 }
 
 type SortOrder = 'asc' | 'desc';
@@ -490,7 +495,7 @@ export default function Preoccupational() {
           <div className="space-y-2 border border-border rounded-md p-3">
             <p className="text-2xs font-mono text-muted uppercase tracking-widest">{t('preoccupational.form.requirements')}</p>
             <div className="grid grid-cols-2 gap-x-4 gap-y-2">
-              {(['clinicalExam', 'spirometry', 'xray', 'audiometry'] as const).map((key) => (
+              {(['clinicalExam', 'spirometry', 'xray', 'audiometry', 'eeg', 'ecg', 'psycho'] as const).map((key) => (
                 <label key={key} className="flex items-center gap-2 cursor-pointer">
                   <input
                     type="checkbox"

@@ -1,6 +1,12 @@
 import type { PreoccupationalExam, AptitudeResult, ExamRequirements } from '@/data/mock/preoccupational';
 import { useApp } from '@/contexts/AppContext';
 
+function fmtDate(d: string | null | undefined): string {
+  if (!d) return '—';
+  const [y, m, day] = d.split('-');
+  return new Date(+y, +m - 1, +day).toLocaleDateString('es-AR');
+}
+
 function InfoRow({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-start gap-2 py-1.5 border-b border-border last:border-0">
@@ -73,9 +79,9 @@ export default function SummaryTab({ exam }: Props) {
           value={t(`preoccupational.examTypes.${exam.examType}`)}
         />
         {exam.summonDate && (
-          <InfoRow label={t('preoccupational.form.summonDate')} value={new Date(exam.summonDate).toLocaleDateString('es-AR')} />
+          <InfoRow label={t('preoccupational.form.summonDate')} value={fmtDate(exam.summonDate)} />
         )}
-        <InfoRow label={t('preoccupational.form.date')} value={exam.date ? new Date(exam.date).toLocaleDateString('es-AR') : '—'} />
+        <InfoRow label={t('preoccupational.form.date')} value={fmtDate(exam.date)} />
         <InfoRow label={t('preoccupational.form.company')} value={exam.company} />
         {exam.place && <InfoRow label={t('preoccupational.summary.place')} value={exam.place} />}
         {exam.position && <InfoRow label={t('preoccupational.summary.position')} value={exam.position} />}
@@ -113,7 +119,7 @@ export default function SummaryTab({ exam }: Props) {
         {patient.dateOfBirth && (
           <InfoRow
             label={t('preoccupational.form.dateOfBirth')}
-            value={`${new Date(patient.dateOfBirth).toLocaleDateString('es-AR')}${age ? ` (${age} años)` : ''}`}
+            value={`${fmtDate(patient.dateOfBirth)}${age ? ` (${age} años)` : ''}`}
           />
         )}
         {patient.birthPlace && <InfoRow label={t('preoccupational.form.birthPlace')} value={patient.birthPlace} />}

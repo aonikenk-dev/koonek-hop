@@ -245,6 +245,9 @@ export interface ExamRequirements {
   spirometry: boolean;
   xray: boolean;
   audiometry: boolean;
+  eeg: boolean;
+  ecg: boolean;
+  psycho: boolean;
   other: string;
 }
 
@@ -253,6 +256,9 @@ export const EMPTY_REQUIREMENTS: ExamRequirements = {
   spirometry: false,
   xray: false,
   audiometry: false,
+  eeg: false,
+  ecg: false,
+  psycho: false,
   other: '',
 };
 
