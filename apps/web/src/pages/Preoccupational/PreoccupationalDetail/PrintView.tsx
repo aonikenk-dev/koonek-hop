@@ -157,7 +157,6 @@ export default function PrintView({ exam, onReady }: Props) {
     onReady?.(logoDone);
   }, [logoDone, onReady]);
 
-  const todayStr = new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'long', year: 'numeric' });
 
   const pageStyle: React.CSSProperties = {
     padding: '16mm 20mm 12mm',
