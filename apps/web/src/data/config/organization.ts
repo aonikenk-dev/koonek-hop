@@ -4,6 +4,8 @@ export const organization = {
   id: 'co-med',
   name: 'Co-Med',
   mainDoctorName: 'Tayhana Ortolá',
+  mainDoctorLicense: 'Médica | MP 2872',
+  mainDoctorSpecialties: ['Esp. en Clínica Médica', 'Esp. Medicina Laboral'],
   specialty: 'Medicina Laboral',
   location: ' Moreno 850, Puerto San Julián',
   city: 'Puerto San Julián',

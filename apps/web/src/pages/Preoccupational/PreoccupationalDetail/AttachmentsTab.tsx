@@ -209,6 +209,11 @@ export default function AttachmentsTab({ exam, onChange }: Props) {
     closeModal();
   };
 
+  const handleDelete = (id: string) => {
+    onChange({ attachments: exam.attachments.filter((a) => a.id !== id) });
+    closeModal();
+  };
+
   return (
     <div className="space-y-5">
       <section className="bg-surface border border-border rounded-md p-4">
@@ -226,11 +231,10 @@ export default function AttachmentsTab({ exam, onChange }: Props) {
             {exam.attachments.map((att) => (
               <li
                 key={att.id}
-                onClick={() => openView(att)}
-                className="flex items-center gap-3 px-4 py-3 cursor-pointer hover:bg-surface-2 transition-colors"
+                className="flex items-center gap-3 px-4 py-3 hover:bg-surface-2 transition-colors"
               >
-                <FileText size={14} className="text-ember shrink-0" />
-                <span className="flex-1 font-mono text-sm text-text truncate">{att.description}</span>
+                <FileText size={14} className="text-ember shrink-0 cursor-pointer" onClick={() => openView(att)} />
+                <span className="flex-1 font-mono text-sm text-text truncate cursor-pointer" onClick={() => openView(att)}>{att.description}</span>
                 <span className="badge-ember shrink-0">
                   {t(`preoccupational.attachments.categories.${att.category}`)}
                 </span>
@@ -242,6 +246,14 @@ export default function AttachmentsTab({ exam, onChange }: Props) {
                 <span className="text-xs text-muted shrink-0 font-mono">
                   {new Date(att.uploadedAt).toLocaleDateString('es-AR')}
                 </span>
+                <button
+                  type="button"
+                  onClick={() => handleDelete(att.id)}
+                  className="text-muted hover:text-sienna transition-colors shrink-0"
+                  title={t('common.delete')}
+                >
+                  <X size={14} />
+                </button>
               </li>
             ))}
           </ul>
@@ -312,13 +324,18 @@ export default function AttachmentsTab({ exam, onChange }: Props) {
               )}
             </div>
 
-            <div className="flex justify-end gap-2 pt-1">
-              <Button variant="secondary" onClick={closeModal}>
-                {t('common.close')}
+            <div className="flex justify-between pt-1">
+              <Button variant="ghost" className="text-sienna hover:text-sienna text-xs" leftIcon={<X size={13} />} onClick={() => handleDelete(modalState.att.id)}>
+                {t('common.delete')}
               </Button>
-              <Button leftIcon={<Pencil size={13} />} onClick={() => openEdit(modalState.att)}>
-                {t('common.edit')}
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="secondary" onClick={closeModal}>
+                  {t('common.close')}
+                </Button>
+                <Button leftIcon={<Pencil size={13} />} onClick={() => openEdit(modalState.att)}>
+                  {t('common.edit')}
+                </Button>
+              </div>
             </div>
           </div>
         </Modal>

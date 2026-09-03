@@ -162,6 +162,13 @@ export default function DeclarationTab({ exam, onChange }: Props) {
             }
           />
           <Input
+            label={t('preoccupational.form.documentId')}
+            value={exam.patient.documentId}
+            onChange={(e) =>
+              onChange({ patient: { ...exam.patient, documentId: e.target.value } })
+            }
+          />
+          <Input
             label={t('preoccupational.form.cuil')}
             value={exam.patient.cuil}
             onChange={(e) =>

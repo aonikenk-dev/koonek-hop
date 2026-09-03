@@ -29,6 +29,9 @@ const ExamRequirementsSchema = z.object({
   spirometry: z.boolean().optional().default(false),
   xray: z.boolean().optional().default(false),
   audiometry: z.boolean().optional().default(false),
+  eeg: z.boolean().optional().default(false),
+  ecg: z.boolean().optional().default(false),
+  psycho: z.boolean().optional().default(false),
   other: z.string().optional().default(''),
 });
 

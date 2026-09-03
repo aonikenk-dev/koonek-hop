@@ -633,37 +633,20 @@ export default function PrintView({ exam, onReady }: Props) {
           </div>
         )}
 
-        <div style={{ marginTop: 56, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 32, textAlign: 'center', fontSize: '9pt' }}>
-          <div>
-            <div style={{ minHeight: 60, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: 0 }}>
-              <div style={{ height: 50, width: 75 }}>
-                <PreoccupationalSignature />
-              </div>
-            </div>
-            <div style={{ borderBottom: '1px solid #000', marginBottom: 5 }} />
-            <div style={{ fontWeight: 400 }}>Firma del Médico</div>
+        <div style={{ marginTop: 75, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', fontSize: '9pt' }}>
+          <div style={{ height: 80, width: 180, marginBottom: 3 }}>
+            <PreoccupationalSignature />
           </div>
-          <div>
-            <div style={{ minHeight: 60, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', marginBottom: 0 }}>
-              {organization.mainDoctorName && (
-                <div style={{ fontSize: '9pt', fontWeight: 500, marginBottom: 4 }}>{organization.mainDoctorName}</div>
-              )}
-            </div>
-            <div style={{ borderBottom: '1px solid #000', marginBottom: 5 }} />
-            <div style={{ fontWeight: 400 }}>Aclaración</div>
-          </div>
-          <div>
-            <div style={{ minHeight: 60, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'flex-end', marginBottom: 0 }}>
-              <div style={{ fontSize: '9pt', fontWeight: 400, marginBottom: 4 }}>
-                {organization.city}
-              </div>
-              <div style={{ fontSize: '9pt', fontWeight: 400, marginBottom: 4 }}>
-                {todayStr}
-              </div>
-            </div>
-            <div style={{ borderBottom: '1px solid #000', marginBottom: 5 }} />
-            <div style={{ fontWeight: 400 }}>Lugar y fecha</div>
-          </div>
+          {/* <div style={{ borderBottom: '1px solid #000', width: 200, marginBottom: 6 }} /> */}
+          {organization.mainDoctorName && (
+            <div style={{ fontSize: '9pt', fontWeight: 600 }}>{organization.mainDoctorName}</div>
+          )}
+          {organization.mainDoctorLicense && (
+            <div style={{ fontSize: '8pt', fontWeight: 400, marginTop: 2 }}>{organization.mainDoctorLicense}</div>
+          )}
+          {organization.mainDoctorSpecialties?.map((s, i) => (
+            <div key={i} style={{ fontSize: '8pt', fontWeight: 400, marginTop: 1 }}>{s}</div>
+          ))}
         </div>
         </div>
         <PageFooter />
