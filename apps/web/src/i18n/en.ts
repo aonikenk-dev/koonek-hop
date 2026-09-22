@@ -660,6 +660,10 @@ const en: Dictionary = {
     new: 'New exam',
     markComplete: 'Mark as completed',
     print: 'Print',
+    deleteConfirm: {
+      title: 'Delete exam',
+      message: 'Are you sure you want to delete the exam for {{name}}? This action cannot be undone.',
+    },
     searchPlaceholder: 'Search by name or ID...',
     empty: 'No exams registered.',
     patientSearch: 'Search patient',
@@ -713,10 +717,11 @@ const en: Dictionary = {
       documentId: 'Document number',
       errors: {
         company: 'Company is required.',
-        place: 'Place is required.',
+        summonDate: 'Summon date is required.',
         documentId: 'Document number is required.',
         firstName: 'First name is required.',
         lastName: 'Last name is required.',
+        requiredFields: 'Missing required fields',
       },
       cuil: 'CUIL',
       dateOfBirth: 'Date of birth',

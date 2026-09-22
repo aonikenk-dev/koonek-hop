@@ -18,6 +18,13 @@ const KIND_ICON_COLOR: Record<WorkspaceTab['kind'], string> = {
   preoccupational: 'text-ember',
 };
 
+const KIND_PARENT_ROUTE: Record<WorkspaceTab['kind'], string> = {
+  patient: '/patients',
+  healthRecord: '/health-records',
+  doctor: '/doctors',
+  preoccupational: '/preoccupational',
+};
+
 export default function WorkspaceTabBar() {
   const { tabs, activeKey, closeTab, setActiveKey } = useWorkspaceTabs();
   const navigate = useNavigate();
@@ -33,11 +40,15 @@ export default function WorkspaceTabBar() {
   const handleClose = (e: MouseEvent, key: string) => {
     e.stopPropagation();
     const closingActive = key === activeKey;
+    const closing = tabs.find((t) => t.key === key);
     const remaining = tabs.filter((t) => t.key !== key);
     closeTab(key);
     if (closingActive) {
-      const next = remaining[remaining.length - 1];
-      navigate(next ? next.path : '/dashboard');
+      if (remaining.length > 0) {
+        navigate(remaining[remaining.length - 1].path);
+      } else {
+        navigate(closing ? KIND_PARENT_ROUTE[closing.kind] : '/dashboard');
+      }
     }
   };
 

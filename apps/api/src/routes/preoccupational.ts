@@ -392,7 +392,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       data: {
         ...(examType !== undefined && { examType: EXAM_TYPE_MAP[examType] }),
         ...(status !== undefined && { status: STATUS_MAP[status] }),
-        ...(date !== undefined && { date: new Date(date) }),
+        ...(date !== undefined && { date: date ? new Date(date) : null }),
         ...(summonDate !== undefined && { summonDate: summonDate ? new Date(summonDate) : null }),
         ...(requirements !== undefined && { requirements: asJson(requirements) }),
         ...(rest.company !== undefined && { company: rest.company }),

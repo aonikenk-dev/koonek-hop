@@ -70,7 +70,7 @@ export interface CreateExamPayload {
   summonDate?: string;
   requirements?: ExamRequirements;
   company: string;
-  place: string;
+  place?: string;
   patient: {
     firstName: string;
     lastName: string;

@@ -218,7 +218,7 @@ export default function Preoccupational() {
 
   const formErrors = {
     company:    submitted && !form.company.trim()    ? t('preoccupational.form.errors.company')    : undefined,
-    place:      submitted && !form.place.trim()      ? t('preoccupational.form.errors.place')      : undefined,
+    summonDate: submitted && !form.summonDate        ? t('preoccupational.form.errors.summonDate')  : undefined,
     documentId: submitted && !form.documentId.trim() ? t('preoccupational.form.errors.documentId') : undefined,
     firstName:  submitted && !form.firstName.trim()  ? t('preoccupational.form.errors.firstName')  : undefined,
     lastName:   submitted && !form.lastName.trim()   ? t('preoccupational.form.errors.lastName')   : undefined,
@@ -226,7 +226,7 @@ export default function Preoccupational() {
 
   const handleSubmit = () => {
     setSubmitted(true);
-    if (!form.company.trim() || !form.place.trim() || !form.documentId.trim() || !form.firstName.trim() || !form.lastName.trim()) return;
+    if (!form.company.trim() || !form.summonDate || !form.documentId.trim() || !form.firstName.trim() || !form.lastName.trim()) return;
     void handleCreate();
   };
 
@@ -474,6 +474,7 @@ export default function Preoccupational() {
               type="date"
               value={form.summonDate}
               onChange={(e) => setForm((f) => ({ ...f, summonDate: e.target.value }))}
+              error={formErrors.summonDate}
             />
           </div>
 
@@ -488,7 +489,6 @@ export default function Preoccupational() {
               label={t('preoccupational.form.place')}
               value={form.place}
               onChange={(e) => setForm((f) => ({ ...f, place: e.target.value }))}
-              error={formErrors.place}
             />
           </div>
 

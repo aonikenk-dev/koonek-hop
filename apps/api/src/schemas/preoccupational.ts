@@ -40,14 +40,14 @@ export const CreateExamSchema = z.object({
   date: z.string().optional(),
   summonDate: z.string().optional(),
   company: z.string().min(1),
-  place: z.string().min(1),
+  place: z.string().optional().default(''),
   requirements: ExamRequirementsSchema.optional(),
   patient: PatientCreateSchema,
 });
 
 export const UpdateExamSchema = z.object({
   examType: z.enum(['preoccupational', 'periodic', 'egress']).optional(),
-  date: z.string().optional(),
+  date: z.string().optional().nullable(),
   summonDate: z.string().optional().nullable(),
   requirements: ExamRequirementsSchema.optional(),
   company: z.string().optional(),

@@ -658,6 +658,10 @@ const es = {
     new: 'Nuevo preocupacional',
     markComplete: 'Marcar como completado',
     print: 'Imprimir',
+    deleteConfirm: {
+      title: 'Eliminar examen',
+      message: '¿Estás seguro que querés eliminar el examen de {{name}}? Esta acción no se puede deshacer.',
+    },
     searchPlaceholder: 'Buscar por nombre o DNI...',
     empty: 'No hay exámenes registrados.',
     patientSearch: 'Buscar paciente',
@@ -711,10 +715,11 @@ const es = {
       documentId: 'Número de documento',
       errors: {
         company: 'La empresa es obligatoria.',
-        place: 'El lugar es obligatorio.',
+        summonDate: 'La fecha de citación es obligatoria.',
         documentId: 'El número de documento es obligatorio.',
         firstName: 'El nombre es obligatorio.',
         lastName: 'El apellido es obligatorio.',
+        requiredFields: 'Campos obligatorios faltantes',
       },
       cuil: 'CUIL',
       dateOfBirth: 'Fecha de nacimiento',

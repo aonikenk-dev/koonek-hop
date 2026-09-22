@@ -136,7 +136,7 @@ model PreoccupationalExam {
   date        DateTime?
   summonDate  DateTime?
   company     String
-  place       String
+  place       String     @default("")
   status      ExamStatus @default(DRAFT)
   position    String     @default("")
   tasks       String     @default("")

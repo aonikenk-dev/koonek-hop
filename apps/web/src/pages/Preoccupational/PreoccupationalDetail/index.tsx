@@ -1,11 +1,13 @@
 import { useState, useRef, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
-import { Save, CheckCircle, Printer, Loader2 } from 'lucide-react';
+import { Save, CheckCircle, Printer, Loader2, Trash2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
 import type { PreoccupationalExam } from '@/data/mock/preoccupational';
-import { getExam, saveExam, completeExam } from '@/services/preoccupational';
+import { getExam, saveExam, completeExam, deleteExam } from '@/services/preoccupational';
+import { useWorkspaceTabs } from '@/store/workspaceTabs';
 import Button from '@/components/ui/Button';
+import Modal from '@/components/ui/Modal';
 import PrintView from './PrintView';
 import SummaryTab from './SummaryTab';
 import DeclarationTab from './DeclarationTab';
@@ -22,14 +24,19 @@ const TAB_IDS: TabId[] = ['summary', 'declaration', 'clinicalExam', 'spirometry'
 export default function PreoccupationalDetail() {
   const { id } = useParams<{ id: string }>();
   const { t } = useApp();
+  const navigate = useNavigate();
+  const { closeTab } = useWorkspaceTabs();
 
   const [exam, setExam] = useState<PreoccupationalExam | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>('summary');
   const [saved, setSaved] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [saveError, setSaveError] = useState<string | null>(null);
   const [isPrinting, setIsPrinting] = useState(false);
   const [printReady, setPrintReady] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -58,8 +65,24 @@ export default function PreoccupationalDetail() {
     setSaved(false);
   };
 
+  const validateExam = () => {
+    const missing: string[] = [];
+    if (!exam.company.trim()) missing.push(t('preoccupational.form.company'));
+    if (!exam.summonDate) missing.push(t('preoccupational.form.summonDate'));
+    if (!exam.patient.firstName.trim()) missing.push(t('preoccupational.form.firstName'));
+    if (!exam.patient.lastName.trim()) missing.push(t('preoccupational.form.lastName'));
+    if (!exam.patient.documentId.trim()) missing.push(t('preoccupational.form.documentId'));
+    return missing;
+  };
+
   const handleSave = async () => {
     if (isSaving) return;
+    const missing = validateExam();
+    if (missing.length > 0) {
+      setSaveError(`${t('preoccupational.form.errors.requiredFields')}: ${missing.join(', ')}`);
+      return;
+    }
+    setSaveError(null);
     setIsSaving(true);
     try {
       const updated = await saveExam(exam.id, exam);
@@ -72,8 +95,26 @@ export default function PreoccupationalDetail() {
   };
 
   const handleComplete = async () => {
+    const missing = validateExam();
+    if (missing.length > 0) {
+      setSaveError(`${t('preoccupational.form.errors.requiredFields')}: ${missing.join(', ')}`);
+      return;
+    }
+    setSaveError(null);
     const updated = await completeExam(exam.id);
     setExam(updated);
+  };
+
+  const handleDelete = async () => {
+    setIsDeleting(true);
+    try {
+      await deleteExam(exam.id);
+      closeTab(`preoccupational:${exam.id}`);
+      navigate('/preoccupational');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
   };
 
   const handlePrint = async () => {
@@ -217,6 +258,14 @@ export default function PreoccupationalDetail() {
           <span className={exam.status === 'completed' ? 'badge-moss' : 'badge-muted'}>
             {t(`preoccupational.status.${exam.status}`)}
           </span>
+          <Button
+            leftIcon={<Trash2 size={14} />}
+            variant="ghost"
+            className="text-sienna hover:text-sienna"
+            onClick={() => setShowDeleteConfirm(true)}
+          >
+            {t('common.delete')}
+          </Button>
           <Button leftIcon={isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} variant="secondary" onClick={() => { void handleSave(); }} disabled={isSaving}>
             {saved ? '✓ Guardado' : t('common.save')}
           </Button>
@@ -236,6 +285,13 @@ export default function PreoccupationalDetail() {
           )}
         </div>
       </div>
+
+      {/* Validation error banner */}
+      {saveError && (
+        <div className="bg-sienna/10 border border-sienna/30 rounded-md px-4 py-2.5 text-sm text-sienna font-mono">
+          {saveError}
+        </div>
+      )}
 
       {/* Tab bar */}
       <div className="flex items-center gap-1 border-b border-border overflow-x-auto">
@@ -288,6 +344,33 @@ export default function PreoccupationalDetail() {
           <ResultTab exam={exam} onChange={patchExam} />
         )}
       </div>
+
+      {/* Delete confirmation modal */}
+      <Modal
+        open={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        title={t('preoccupational.deleteConfirm.title')}
+        size="sm"
+      >
+        <div className="p-5 space-y-4">
+          <p className="text-sm font-mono text-text">
+            {t('preoccupational.deleteConfirm.message', { name: `${exam.patient.firstName} ${exam.patient.lastName}` })}
+          </p>
+          <div className="flex justify-end gap-2">
+            <Button variant="ghost" onClick={() => setShowDeleteConfirm(false)} disabled={isDeleting}>
+              {t('common.cancel')}
+            </Button>
+            <Button
+              className="bg-sienna hover:bg-sienna/90 text-white"
+              leftIcon={isDeleting ? <Loader2 size={14} className="animate-spin" /> : <Trash2 size={14} />}
+              onClick={() => { void handleDelete(); }}
+              disabled={isDeleting}
+            >
+              {isDeleting ? t('common.loading') : t('common.delete')}
+            </Button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }
