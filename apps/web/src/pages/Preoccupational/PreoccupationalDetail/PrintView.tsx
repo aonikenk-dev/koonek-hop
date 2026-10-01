@@ -88,7 +88,12 @@ function PageFooter() {
 const cb = (v: boolean) => v ? '☑' : '☐';
 const d = (v?: string | number | null) =>
   (v !== undefined && v !== null && String(v).trim() !== '') ? String(v) : '—';
-const dateStr = (s?: string) => s ? new Date(s).toLocaleDateString('es-AR') : '—';
+// Parse 'YYYY-MM-DD' (or ISO with time) as a local date to avoid the UTC shift of new Date(s)
+const parseLocalDate = (s: string) => {
+  const [y, m, day] = s.slice(0, 10).split('-');
+  return new Date(+y, +m - 1, +day);
+};
+const dateStr = (s?: string) => s ? parseLocalDate(s).toLocaleDateString('es-AR') : '—';
 
 function Row({ label, value }: { label: string; value?: React.ReactNode }) {
   return (
@@ -221,7 +226,7 @@ export default function PrintView({ exam, onReady }: Props) {
                   {[
                     exam.place?.trim(),
                     exam.date
-                      ? new Date(exam.date).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+                      ? parseLocalDate(exam.date).toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
                       : undefined,
                   ].filter(Boolean).join('. ')}
                   {'.'}
