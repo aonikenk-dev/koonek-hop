@@ -20,6 +20,7 @@ enum ExamType {
 
 enum ExamStatus {
   DRAFT
+  IN_PROGRESS
   COMPLETED
 }
 

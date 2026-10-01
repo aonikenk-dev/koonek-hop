@@ -54,7 +54,7 @@ export const UpdateExamSchema = z.object({
   place: z.string().optional(),
   position: z.string().optional(),
   tasks: z.string().optional(),
-  status: z.enum(['draft', 'completed']).optional(),
+  status: z.enum(['draft', 'in_progress', 'completed']).optional(),
   declaration: z.record(z.unknown()).optional(),
   habitsDeclaration: z.record(z.unknown()).optional(),
   familyHistory: z.record(z.unknown()).optional(),

@@ -26,8 +26,10 @@ const EXAM_TYPE_REVERSE = {
   EGRESS: 'egress',
 } as const;
 
-const STATUS_MAP = { draft: 'DRAFT', completed: 'COMPLETED' } as const;
-const STATUS_REVERSE = { DRAFT: 'draft', COMPLETED: 'completed' } as const;
+const STATUS_MAP = { draft: 'DRAFT', in_progress: 'IN_PROGRESS', completed: 'COMPLETED' } as const;
+const STATUS_REVERSE = { DRAFT: 'draft', IN_PROGRESS: 'in_progress', COMPLETED: 'completed' } as const;
+type StatusKey = keyof typeof STATUS_MAP;
+const isStatusKey = (s: unknown): s is StatusKey => typeof s === 'string' && Object.prototype.hasOwnProperty.call(STATUS_MAP, s);
 
 const ID_TYPE_MAP = { DNI: 'DNI', LE: 'LE', OTRO: 'OTRO' } as const;
 
@@ -198,7 +200,7 @@ const SORTABLE_FIELDS = new Set(['summonDate', 'date', 'createdAt', 'company']);
 
 // ── GET /preoccupational ──────────────────────────────────────────────────────
 // List exams for the authenticated organization.
-// Query params: search, status (draft|completed), page, limit, sortBy, sortOrder (asc|desc)
+// Query params: search, status (draft|in_progress|completed), page, limit, sortBy, sortOrder (asc|desc)
 router.get('/', async (req: Request, res: Response) => {
   const orgId = req.auth!.organizationId;
   const {
@@ -215,7 +217,7 @@ router.get('/', async (req: Request, res: Response) => {
 
   const where: Record<string, unknown> = { organizationId: orgId };
 
-  if (status === 'draft' || status === 'completed') {
+  if (isStatusKey(status)) {
     where['status'] = STATUS_MAP[status];
   }
 
@@ -342,7 +344,7 @@ router.put('/:id', async (req: Request, res: Response) => {
 
   const existing = await prisma.preoccupationalExam.findFirst({
     where: { id: req.params['id'], organizationId: orgId },
-    select: { id: true },
+    select: { id: true, status: true },
   });
   if (!existing) {
     return res.status(404).json({ error: 'Exam not found' });
@@ -362,6 +364,15 @@ router.put('/:id', async (req: Request, res: Response) => {
     requirements,
     ...rest
   } = parsed.data;
+
+  // Saving a pending (draft) exam moves it to in-progress. A completed exam keeps
+  // its status unless the client explicitly sends a different one.
+  let nextStatus: (typeof STATUS_MAP)[StatusKey] | undefined;
+  if (existing.status === 'COMPLETED') {
+    nextStatus = status !== undefined ? STATUS_MAP[status] : undefined;
+  } else {
+    nextStatus = status === 'completed' ? 'COMPLETED' : 'IN_PROGRESS';
+  }
 
   const exam = await prisma.$transaction(async (tx) => {
     // Update PreemploymentPatient if patient fields are provided
@@ -391,7 +402,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       where: { id: req.params['id'] },
       data: {
         ...(examType !== undefined && { examType: EXAM_TYPE_MAP[examType] }),
-        ...(status !== undefined && { status: STATUS_MAP[status] }),
+        ...(nextStatus !== undefined && { status: nextStatus }),
         ...(date !== undefined && { date: date ? new Date(date) : null }),
         ...(summonDate !== undefined && { summonDate: summonDate ? new Date(summonDate) : null }),
         ...(requirements !== undefined && { requirements: asJson(requirements) }),
@@ -425,8 +436,8 @@ router.patch('/:id/status', async (req: Request, res: Response) => {
   const orgId = req.auth!.organizationId;
   const { status } = req.body as { status: string };
 
-  if (status !== 'draft' && status !== 'completed') {
-    return res.status(400).json({ error: 'status must be draft or completed' });
+  if (!isStatusKey(status)) {
+    return res.status(400).json({ error: 'status must be draft, in_progress or completed' });
   }
 
   const existing = await prisma.preoccupationalExam.findFirst({
@@ -440,7 +451,7 @@ router.patch('/:id/status', async (req: Request, res: Response) => {
   const exam = await prisma.preoccupationalExam.update({
     where: { id: req.params['id'] },
     data: {
-      status: STATUS_MAP[status as 'draft' | 'completed'],
+      status: STATUS_MAP[status],
       // Set exam date to now when completing, only if not already recorded
       ...(status === 'completed' && !existing.date && { date: new Date() }),
     },

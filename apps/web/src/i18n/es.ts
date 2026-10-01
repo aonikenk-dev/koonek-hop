@@ -680,6 +680,7 @@ const es = {
     },
     status: {
       draft: 'Pendiente',
+      in_progress: 'En proceso',
       completed: 'Completado',
     },
     table: {
@@ -734,6 +735,7 @@ const es = {
     },
     tabs: {
       pending: 'Pendientes',
+      inProgress: 'En Proceso',
       completed: 'Completados',
       summary: 'Resumen',
       declaration: 'Datos y Antecedentes',

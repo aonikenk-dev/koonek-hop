@@ -1,4 +1,4 @@
-import type { PreoccupationalExam, AptitudeResult, ExamRequirements } from '@/data/mock/preoccupational';
+import { type PreoccupationalExam, type AptitudeResult, type ExamRequirements, STATUS_BADGE_CLASS } from '@/data/mock/preoccupational';
 import { useApp } from '@/contexts/AppContext';
 
 function fmtDate(d: string | null | undefined): string {
@@ -98,7 +98,7 @@ export default function SummaryTab({ exam }: Props) {
         <InfoRow
           label={t('preoccupational.table.status')}
           value={
-            <span className={exam.status === 'completed' ? 'badge-moss' : 'badge-muted'}>
+            <span className={STATUS_BADGE_CLASS[exam.status]}>
               {t(`preoccupational.status.${exam.status}`)}
             </span>
           }

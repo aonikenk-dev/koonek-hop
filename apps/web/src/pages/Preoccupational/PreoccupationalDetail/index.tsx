@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { clsx } from 'clsx';
 import { Save, CheckCircle, Printer, Loader2, Trash2 } from 'lucide-react';
 import { useApp } from '@/contexts/AppContext';
-import type { PreoccupationalExam } from '@/data/mock/preoccupational';
+import { type PreoccupationalExam, STATUS_BADGE_CLASS } from '@/data/mock/preoccupational';
 import { getExam, saveExam, completeExam, deleteExam } from '@/services/preoccupational';
 import { useWorkspaceTabs } from '@/store/workspaceTabs';
 import Button from '@/components/ui/Button';
@@ -255,7 +255,7 @@ export default function PreoccupationalDetail() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <span className={exam.status === 'completed' ? 'badge-moss' : 'badge-muted'}>
+          <span className={STATUS_BADGE_CLASS[exam.status]}>
             {t(`preoccupational.status.${exam.status}`)}
           </span>
           <Button
@@ -269,7 +269,7 @@ export default function PreoccupationalDetail() {
           <Button leftIcon={isSaving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />} variant="secondary" onClick={() => { void handleSave(); }} disabled={isSaving}>
             {saved ? '✓ Guardado' : t('common.save')}
           </Button>
-          {exam.status === 'draft' && (
+          {exam.status !== 'completed' && (
             <Button leftIcon={<CheckCircle size={14} />} onClick={() => { void handleComplete(); }}>
               {t('preoccupational.markComplete')}
             </Button>

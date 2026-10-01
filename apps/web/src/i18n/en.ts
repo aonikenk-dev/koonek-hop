@@ -682,6 +682,7 @@ const en: Dictionary = {
     },
     status: {
       draft: 'Pending',
+      in_progress: 'In progress',
       completed: 'Completed',
     },
     table: {
@@ -736,6 +737,7 @@ const en: Dictionary = {
     },
     tabs: {
       pending: 'Pending',
+      inProgress: 'In Progress',
       completed: 'Completed',
       summary: 'Summary',
       declaration: 'Data & History',

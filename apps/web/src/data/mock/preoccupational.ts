@@ -11,7 +11,13 @@ export type AptitudeResult =
   | 'requiresPeriodicControl'
   | 'requiresSpecialistConsultation'
   | null;
-export type ExamStatus = 'draft' | 'completed';
+export type ExamStatus = 'draft' | 'in_progress' | 'completed';
+
+export const STATUS_BADGE_CLASS: Record<ExamStatus, string> = {
+  draft: 'badge-muted',
+  in_progress: 'badge-ember',
+  completed: 'badge-moss',
+};
 
 export interface PreemploymentPatient {
   id: string;

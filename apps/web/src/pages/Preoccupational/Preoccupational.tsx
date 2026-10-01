@@ -8,6 +8,7 @@ import {
   type ExamType,
   type AptitudeResult,
   type ExamRequirements,
+  type ExamStatus,
   EMPTY_REQUIREMENTS,
 } from '@/data/mock/preoccupational';
 import {
@@ -78,6 +79,14 @@ function fmtDate(d: string | null | undefined) {
 
 type SortOrder = 'asc' | 'desc';
 
+type ListTab = 'pending' | 'inProgress' | 'completed';
+const LIST_TABS: ListTab[] = ['pending', 'inProgress', 'completed'];
+const TAB_STATUS: Record<ListTab, ExamStatus> = {
+  pending: 'draft',
+  inProgress: 'in_progress',
+  completed: 'completed',
+};
+
 interface TabState {
   page: number;
   sortBy: string;
@@ -120,7 +129,7 @@ export default function Preoccupational() {
   const navigate = useNavigate();
   const { openTab } = useWorkspaceTabs();
 
-  const [activeTab, setActiveTab] = useState<'pending' | 'completed'>('pending');
+  const [activeTab, setActiveTab] = useState<ListTab>('pending');
   const [search, setSearch] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState<CreateForm>(EMPTY_FORM);
@@ -131,14 +140,23 @@ export default function Preoccupational() {
   const [pending, setPending] = useState<TabState>({
     page: 1, sortBy: 'summonDate', sortOrder: 'asc', data: [], total: 0, loading: true,
   });
+  const [inProgress, setInProgress] = useState<TabState>({
+    page: 1, sortBy: 'summonDate', sortOrder: 'asc', data: [], total: 0, loading: true,
+  });
   const [completed, setCompleted] = useState<TabState>({
     page: 1, sortBy: 'date', sortOrder: 'desc', data: [], total: 0, loading: true,
   });
 
+  const tabs: Record<ListTab, { state: TabState; setter: React.Dispatch<React.SetStateAction<TabState>> }> = {
+    pending: { state: pending, setter: setPending },
+    inProgress: { state: inProgress, setter: setInProgress },
+    completed: { state: completed, setter: setCompleted },
+  };
+
   const searchTimer = useRef<ReturnType<typeof setTimeout>>();
 
   const fetchTab = useCallback(async (
-    status: 'draft' | 'completed',
+    status: ExamStatus,
     state: TabState,
     setter: React.Dispatch<React.SetStateAction<TabState>>,
     searchQ: string,
@@ -160,33 +178,38 @@ export default function Preoccupational() {
     }
   }, []);
 
-  // Fetch both tabs on mount and whenever their state changes
+  // Fetch every tab on mount and whenever its state changes
   useEffect(() => {
     void fetchTab('draft', pending, setPending, search);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pending.page, pending.sortBy, pending.sortOrder]);
 
   useEffect(() => {
+    void fetchTab('in_progress', inProgress, setInProgress, search);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [inProgress.page, inProgress.sortBy, inProgress.sortOrder]);
+
+  useEffect(() => {
     void fetchTab('completed', completed, setCompleted, search);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [completed.page, completed.sortBy, completed.sortOrder]);
 
-  // Debounced search refetches both tabs from page 1
+  // Debounced search refetches every tab from page 1
   useEffect(() => {
     clearTimeout(searchTimer.current);
     searchTimer.current = setTimeout(() => {
-      setPending((s) => ({ ...s, page: 1 }));
-      setCompleted((s) => ({ ...s, page: 1 }));
-      void fetchTab('draft', { ...pending, page: 1 }, setPending, search);
-      void fetchTab('completed', { ...completed, page: 1 }, setCompleted, search);
+      for (const tab of LIST_TABS) {
+        const { state, setter } = tabs[tab];
+        setter((s) => ({ ...s, page: 1 }));
+        void fetchTab(TAB_STATUS[tab], { ...state, page: 1 }, setter, search);
+      }
     }, 350);
     return () => clearTimeout(searchTimer.current);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [search]);
 
-  const handleSort = (tab: 'pending' | 'completed', key: string) => {
-    const setter = tab === 'pending' ? setPending : setCompleted;
-    const state = tab === 'pending' ? pending : completed;
+  const handleSort = (tab: ListTab, key: string) => {
+    const { state, setter } = tabs[tab];
     const newOrder: SortOrder = state.sortBy === key && state.sortOrder === 'asc' ? 'desc' : 'asc';
     setter((s) => ({ ...s, sortBy: key, sortOrder: newOrder, page: 1 }));
   };
@@ -292,7 +315,7 @@ export default function Preoccupational() {
     header: t('preoccupational.table.patient'),
     render: (ex) => (
       <span className="font-mono text-sm text-text">
-        {ex.patient.firstName} {ex.patient.lastName}
+        {ex.patient.lastName} {ex.patient.firstName}
         <span className="ml-2 text-muted text-xs">{ex.patient.nationalIdType} {ex.patient.documentId}</span>
       </span>
     ),
@@ -333,6 +356,12 @@ export default function Preoccupational() {
 
   const pendingColumns: Column<PreoccupationalExam>[] = [patientCol, examTypeCol, summonDateCol, companyCol];
   const completedColumns: Column<PreoccupationalExam>[] = [patientCol, examTypeCol, dateCol, companyCol, resultCol];
+  const tabColumns: Record<ListTab, Column<PreoccupationalExam>[]> = {
+    pending: pendingColumns,
+    inProgress: pendingColumns,
+    completed: completedColumns,
+  };
+  const active = tabs[activeTab];
 
   function Pagination({ state, setter }: { state: TabState; setter: React.Dispatch<React.SetStateAction<TabState>> }) {
     const totalPages = Math.ceil(state.total / PAGE_LIMIT);
@@ -384,7 +413,7 @@ export default function Preoccupational() {
 
       {/* Tabs */}
       <div className="border-b border-border flex gap-0">
-        {(['pending', 'completed'] as const).map((tab) => (
+        {LIST_TABS.map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -396,57 +425,32 @@ export default function Preoccupational() {
           >
             {t(`preoccupational.tabs.${tab}`)}
             <span className={`ml-2 text-2xs px-1.5 py-0.5 rounded font-mono ${activeTab === tab ? 'badge-moss' : 'badge-muted'}`}>
-              {tab === 'pending' ? pending.total : completed.total}
+              {tabs[tab].state.total}
             </span>
           </button>
         ))}
       </div>
 
-      {/* Pending tab */}
-      {activeTab === 'pending' && (
-        <div className="space-y-3">
-          {pending.loading ? (
-            <div className="flex items-center justify-center h-32">
-              <p className="text-sm text-muted font-mono">{t('common.loading')}</p>
-            </div>
-          ) : (
-            <Table
-              rows={pending.data}
-              rowKey={(ex) => ex.id}
-              columns={pendingColumns}
-              onRowClick={handleRowClick}
-              emptyMessage={t('preoccupational.empty')}
-              sortBy={pending.sortBy}
-              sortOrder={pending.sortOrder}
-              onSort={(key) => handleSort('pending', key)}
-            />
-          )}
-          <Pagination state={pending} setter={setPending} />
-        </div>
-      )}
-
-      {/* Completed tab */}
-      {activeTab === 'completed' && (
-        <div className="space-y-3">
-          {completed.loading ? (
-            <div className="flex items-center justify-center h-32">
-              <p className="text-sm text-muted font-mono">{t('common.loading')}</p>
-            </div>
-          ) : (
-            <Table
-              rows={completed.data}
-              rowKey={(ex) => ex.id}
-              columns={completedColumns}
-              onRowClick={handleRowClick}
-              emptyMessage={t('preoccupational.empty')}
-              sortBy={completed.sortBy}
-              sortOrder={completed.sortOrder}
-              onSort={(key) => handleSort('completed', key)}
-            />
-          )}
-          <Pagination state={completed} setter={setCompleted} />
-        </div>
-      )}
+      {/* Active tab */}
+      <div className="space-y-3">
+        {active.state.loading ? (
+          <div className="flex items-center justify-center h-32">
+            <p className="text-sm text-muted font-mono">{t('common.loading')}</p>
+          </div>
+        ) : (
+          <Table
+            rows={active.state.data}
+            rowKey={(ex) => ex.id}
+            columns={tabColumns[activeTab]}
+            onRowClick={handleRowClick}
+            emptyMessage={t('preoccupational.empty')}
+            sortBy={active.state.sortBy}
+            sortOrder={active.state.sortOrder}
+            onSort={(key) => handleSort(activeTab, key)}
+          />
+        )}
+        <Pagination state={active.state} setter={active.setter} />
+      </div>
 
       {/* Create modal */}
       <Modal
