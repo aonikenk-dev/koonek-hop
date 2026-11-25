@@ -592,9 +592,8 @@ export default function PrintView({ exam, onReady }: Props) {
         <div style={{ flexGrow: 1 }}>
         <H2>Resultado</H2>
         <div style={{ fontSize: '9pt', border: '1px solid #ccc', padding: '6px 8px', marginBottom: 10, fontStyle: 'italic' }}>
-          Resultado examen periódico de acuerdo a la Ley Nº 19.587/72 Dto. Nº 351/79 y Ley Nº 24.557/95 Dto Nº 658/96, Resol Nº 43/97
+          Resultado examen periódico para el paciente <strong>{patient.firstName} {patient.lastName} ({patient.nationalIdType} {patient.documentId})</strong> de acuerdo a la Ley Nº 19.587/72 Dto. Nº 351/79 y Ley Nº 24.557/95 Dto Nº 658/96, Resol Nº 43/97.
         </div>
-
         <YNTable rows={[
           { label: 'NORMAL', value: result.normal },
           { label: 'ENFERMEDADES INCULPABLES', value: result.inculpableDiseases },
